@@ -134,7 +134,7 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {spareparts.map((sparepart) => (
               <article key={sparepart.id} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
-                <Link href={`/dashboard/management/sparepart/${sparepart.id}`} className="block">
+                <Link href={`/dashboard/sparepart/${sparepart.id}`} className="block">
                   <div className="h-44 bg-zinc-100">
                     {sparepart.firstImageUrl ? (
                       <img src={sparepart.firstImageUrl} alt={sparepart.name} className="h-full w-full object-cover" />

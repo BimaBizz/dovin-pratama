@@ -50,7 +50,7 @@ export default async function SparepartDetailPage({ params }) {
   return (
     <div className="space-y-4">
       <div>
-        <Link href="/dashboard/management/sparepart" className="text-sm font-medium text-zinc-700 underline underline-offset-2 hover:text-zinc-900">
+        <Link href="/dashboard/sparepart" className="text-sm font-medium text-zinc-700 underline underline-offset-2 hover:text-zinc-900">
           Kembali ke daftar sparepart
         </Link>
       </div>

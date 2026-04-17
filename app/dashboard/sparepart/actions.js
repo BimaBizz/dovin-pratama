@@ -175,7 +175,7 @@ export async function createSparepartAction(formData) {
     return { error: error instanceof Error ? error.message : "Gagal menambahkan sparepart." };
   }
 
-  revalidatePath("/dashboard/management/sparepart");
+  revalidatePath("/dashboard/sparepart");
   return { success: true };
 }
 
@@ -307,8 +307,8 @@ export async function updateSparepartAction(formData) {
     return { error: error instanceof Error ? error.message : "Gagal memperbarui sparepart." };
   }
 
-  revalidatePath("/dashboard/management/sparepart");
-  revalidatePath(`/dashboard/management/sparepart/${id}`);
+  revalidatePath("/dashboard/sparepart");
+  revalidatePath(`/dashboard/sparepart/${id}`);
   return { success: true };
 }
 
@@ -348,6 +348,6 @@ export async function deleteSparepartAction(formData) {
     await deleteStoredFile(image.filePath);
   }
 
-  revalidatePath("/dashboard/management/sparepart");
+  revalidatePath("/dashboard/sparepart");
   return { success: true };
 }
