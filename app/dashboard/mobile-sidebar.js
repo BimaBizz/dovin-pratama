@@ -12,6 +12,7 @@ import {
   Users,
   X,
   Network,
+  Package,
 } from "lucide-react";
 
 import { logoutAction } from "@/app/dashboard/actions";
@@ -23,6 +24,7 @@ const iconMap = {
   users: Users,
   settings: Settings,
   "network": Network,
+  "package": Package,
   "chart-column-increasing": ChartColumnIncreasing,
 };
 

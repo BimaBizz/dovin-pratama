@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check } from "lucide-react";
+import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, CircleChevronDown, Package } from "lucide-react";
 
 import MobileSidebar from "@/app/dashboard/mobile-sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +14,7 @@ const iconMap = {
   settings: Settings,
   "network": Network,
   "check": Check,
+  "package": Package,
   "chart-column-increasing": ChartColumnIncreasing,
 };
 
@@ -49,12 +50,13 @@ export default async function DashboardLayout({ children }) {
 
             if (item.type === "group") {
               return (
-                <details key={item.id} className="rounded-md border border-zinc-200 bg-white">
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-zinc-700 hover:bg-zinc-100">
+                <details key={item.id} className="rounded-md bg-white">
+                  <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-zinc-700 hover:bg-zinc-100 rounded-md">
                     <span className="flex items-center gap-2">
                       <ItemIcon className="h-4 w-4" />
                       {item.label}
                     </span>
+                    <CircleChevronDown className="h-4 w-4 text-zinc-500" />
                   </summary>
                   <div className="border-t border-zinc-200 p-2">
                     {item.links.map((subItem) => (

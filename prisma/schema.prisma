@@ -84,6 +84,34 @@ model TeamScheduleAssignment {
   @@unique([teamId, userId, workDate])
 }
 
+model Sparepart {
+  id          String          @id @default(uuid())
+  name        String
+  location    String
+  quantity    Int             @default(0)
+  description String?
+  images      SparepartImage[]
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  @@index([name])
+  @@index([location])
+}
+
+model SparepartImage {
+  id         String    @id @default(uuid())
+  sparepartId String
+  sparepart  Sparepart @relation(fields: [sparepartId], references: [id], onDelete: Cascade)
+  filePath   String
+  fileName   String
+  mimeType   String?
+  sortOrder  Int       @default(0)
+  createdAt  DateTime  @default(now())
+
+  @@index([sparepartId])
+  @@index([sortOrder])
+}
+
 model Session {
   id        String   @id @default(uuid())
   tokenHash String   @unique

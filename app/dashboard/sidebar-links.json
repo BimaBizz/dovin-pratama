@@ -39,6 +39,13 @@
     ]
   },
   {
+    "id": "sparepart",
+    "type": "link",
+    "label": "Sparepart",
+    "icon": "package",
+    "href": "/dashboard/sparepart"
+  },
+  {
     "id": "attendance",
     "type": "link",
     "label": "Absensi",
