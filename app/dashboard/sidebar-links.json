@@ -1,0 +1,53 @@
+[
+  {
+    "id": "dashboard",
+    "type": "link",
+    "label": "Dashboard",
+    "href": "/dashboard",
+    "icon": "layout-dashboard"
+  },
+  {
+    "id": "users",
+    "type": "group",
+    "label": "Users",
+    "icon": "users",
+    "links": [
+      {
+        "label": "Kelola User",
+        "href": "/dashboard/users"
+      },
+      {
+        "label": "Role",
+        "href": "/dashboard/roles"
+      }
+    ]
+  },
+  {
+    "id": "team",
+    "type": "group",
+    "label": "management",
+    "icon": "network",
+    "links": [
+      {
+        "label": "Kelola Tim",
+        "href": "/dashboard/management/kelola-tim"
+      },
+      {
+        "label": "Kelola Jadwal",
+        "href": "/dashboard/management/kelola-jadwal"
+      }
+    ]
+  },
+  {
+    "id": "analytics",
+    "type": "placeholder",
+    "label": "Analytics",
+    "icon": "chart-column-increasing"
+  },
+  {
+    "id": "settings",
+    "type": "placeholder",
+    "label": "Settings",
+    "icon": "settings"
+  }
+]

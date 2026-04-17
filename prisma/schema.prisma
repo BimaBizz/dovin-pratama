@@ -1,0 +1,122 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  fullName     String?
+  birthPlace   String?
+  birthDate    DateTime?
+  address      String?
+  passwordHash String
+  role         String    @default("USER")
+  ledTeam      Team?     @relation("TeamLeader")
+  teamMember   TeamMember?
+  scheduleAssignments TeamScheduleAssignment[]
+  userDocument UserDocument?
+  sessions     Session[]
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Team {
+  id        String   @id @default(uuid())
+  name      String   @unique
+  leaderId  String   @unique
+  leader    User     @relation("TeamLeader", fields: [leaderId], references: [id], onDelete: Restrict)
+  members   TeamMember[]
+  schedules TeamSchedule[]
+  scheduleAssignments TeamScheduleAssignment[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([leaderId])
+}
+
+model TeamMember {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String   @unique
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([teamId])
+  @@index([userId])
+  @@unique([teamId, userId])
+}
+
+model TeamSchedule {
+  id        String   @id @default(uuid())
+  teamId    String
+  workDate  DateTime @db.Date
+  shiftCode String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teamId])
+  @@index([workDate])
+  @@unique([teamId, workDate])
+}
+
+model TeamScheduleAssignment {
+  id        String   @id @default(uuid())
+  teamId    String
+  userId    String
+  workDate  DateTime @db.Date
+  shiftCode String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([teamId])
+  @@index([userId])
+  @@index([workDate])
+  @@unique([teamId, userId, workDate])
+}
+
+model Session {
+  id        String   @id @default(uuid())
+  tokenHash String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+model RoleEntry {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model UserDocument {
+  id           String   @id @default(uuid())
+  userId       String   @unique
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  ktpPath      String?
+  ktpName      String?
+  kkPath       String?
+  kkName       String?
+  ijazahPath   String?
+  ijazahName   String?
+  skckPath     String?
+  skckName     String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([userId])
+}
