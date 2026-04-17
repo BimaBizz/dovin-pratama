@@ -5,7 +5,8 @@ import { revalidatePath } from "next/cache";
 import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 
-import { getCurrentSession, requireSuperuser } from "@/lib/auth";
+import { getCurrentSession } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const MAX_DOCUMENT_SIZE_BYTES = 2 * 1024 * 1024;
@@ -158,7 +159,7 @@ async function ensureRoleExistsInMaster(role) {
 }
 
 export async function createUserAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("users", "create");
 
   const fullName = String(formData.get("fullName") || "").trim();
   const birthPlace = String(formData.get("birthPlace") || "").trim();
@@ -222,7 +223,7 @@ export async function createUserAction(formData) {
 }
 
 export async function updateUserAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("users", "update");
 
   const id = String(formData.get("id") || "").trim();
   const fullName = String(formData.get("fullName") || "").trim();
@@ -312,7 +313,7 @@ export async function updateUserAction(formData) {
 }
 
 export async function deleteUserAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("users", "delete");
 
   const id = String(formData.get("id") || "").trim();
   if (!id) {

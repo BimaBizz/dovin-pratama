@@ -2,7 +2,7 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -11,7 +11,7 @@ export const metadata = {
 };
 
 export default async function SparepartDetailPage({ params }) {
-  await requireAuthenticatedUser();
+  await requirePagePermission("sparepart", "view");
 
   const resolvedParams = await params;
   const sparepartId = String(resolvedParams?.sparepartId || "").trim();

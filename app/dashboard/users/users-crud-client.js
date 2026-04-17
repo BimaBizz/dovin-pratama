@@ -108,7 +108,16 @@ function DocumentUploadFields({ prefix, existingDocument, userId }) {
   );
 }
 
-export default function UsersCrudClient({ users, roleOptions = [], initError = "", pagination, search = "" }) {
+export default function UsersCrudClient({
+  users,
+  roleOptions = [],
+  initError = "",
+  pagination,
+  search = "",
+  canCreate = true,
+  canUpdate = true,
+  canDelete = true,
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [modal, setModal] = useState(null);
@@ -177,10 +186,12 @@ export default function UsersCrudClient({ users, roleOptions = [], initError = "
           <CardTitle>CRUD User</CardTitle>
           <CardDescription>Kelola data user menggunakan popup create, update, dan delete.</CardDescription>
         </div>
-        <Button type="button" onClick={() => setModal({ type: "create" })}>
-          <Plus />
-          Tambah User
-        </Button>
+        {canCreate ? (
+          <Button type="button" onClick={() => setModal({ type: "create" })}>
+            <Plus />
+            Tambah User
+          </Button>
+        ) : null}
       </CardHeader>
       <CardContent>
         <form className="mb-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>
@@ -223,20 +234,24 @@ export default function UsersCrudClient({ users, roleOptions = [], initError = "
                   </td>
                   <td className="px-2 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" type="button" onClick={() => setModal({ type: "edit", userId: user.id })}>
-                        <PenSquare />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        type="button"
-                        disabled={user.role === "SUPERUSER"}
-                        onClick={() => setModal({ type: "delete", userId: user.id })}
-                      >
-                        <Trash2 />
-                        {user.role === "SUPERUSER" ? "Tidak Bisa Dihapus" : "Hapus"}
-                      </Button>
+                      {canUpdate ? (
+                        <Button size="sm" variant="outline" type="button" onClick={() => setModal({ type: "edit", userId: user.id })}>
+                          <PenSquare />
+                          Edit
+                        </Button>
+                      ) : null}
+                      {canDelete ? (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          type="button"
+                          disabled={user.role === "SUPERUSER"}
+                          onClick={() => setModal({ type: "delete", userId: user.id })}
+                        >
+                          <Trash2 />
+                          {user.role === "SUPERUSER" ? "Tidak Bisa Dihapus" : "Hapus"}
+                        </Button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -298,7 +313,7 @@ export default function UsersCrudClient({ users, roleOptions = [], initError = "
         </div> */}
       </CardContent>
 
-      {modal?.type === "create" ? (
+      {modal?.type === "create" && canCreate ? (
         <Modal title="Tambah User" description="Buat akun user baru." onClose={() => setModal(null)}>
           <form
             className="space-y-4"
@@ -370,7 +385,7 @@ export default function UsersCrudClient({ users, roleOptions = [], initError = "
         </Modal>
       ) : null}
 
-      {modal?.type === "edit" && selectedUser ? (
+      {modal?.type === "edit" && selectedUser && canUpdate ? (
         <Modal title="Edit User" description="Perbarui email, role, atau password user." onClose={() => setModal(null)}>
           <form
             className="space-y-4"
@@ -444,7 +459,7 @@ export default function UsersCrudClient({ users, roleOptions = [], initError = "
         </Modal>
       ) : null}
 
-      {modal?.type === "delete" && selectedUser ? (
+      {modal?.type === "delete" && selectedUser && canDelete ? (
         <Modal title="Hapus User" description="Aksi ini tidak dapat dibatalkan." onClose={() => setModal(null)}>
           <form
             className="space-y-3"

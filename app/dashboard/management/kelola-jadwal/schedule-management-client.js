@@ -125,6 +125,7 @@ export default function ScheduleManagementClient({
   assignments = [],
   recentAssignments = [],
   initError = "",
+  canUpdate = true,
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -310,15 +311,15 @@ export default function ScheduleManagementClient({
             </CardDescription>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <Button type="button" variant="outline" disabled={!month} onClick={() => exportSchedule("excel")}>
+            <Button type="button" variant="outline" disabled={!month || !canUpdate} onClick={() => exportSchedule("excel")}>
               <Download />
               Export Excel
             </Button>
-            <Button type="button" variant="outline" disabled={!month} onClick={() => exportSchedule("pdf")}>
+            <Button type="button" variant="outline" disabled={!month || !canUpdate} onClick={() => exportSchedule("pdf")}>
               <Download />
               Export PDF
             </Button>
-            <Button type="button" disabled={pending || !teamId || monthDays.length === 0} onClick={submitGrid}>
+            <Button type="button" disabled={!canUpdate || pending || !teamId || monthDays.length === 0} onClick={submitGrid}>
               <Save />
               Simpan Jadwal
             </Button>
@@ -342,7 +343,7 @@ export default function ScheduleManagementClient({
                     <p className="text-sm font-semibold text-zinc-900">Pola Shift</p>
                     <p className="text-xs text-zinc-500">Tambahkan urutan shift untuk satu siklus. Setelah itu klik Terapkan Pola ke Grid.</p>
                   </div>
-                  <Button type="button" variant="outline" onClick={addPatternRow}>
+                  <Button type="button" variant="outline" onClick={addPatternRow} disabled={!canUpdate}>
                     <Plus />
                     Tambah Pola
                   </Button>
@@ -355,6 +356,7 @@ export default function ScheduleManagementClient({
                       <select
                         value={row.shiftCode}
                         onChange={(event) => handlePatternChange(row.id, event.target.value)}
+                        disabled={!canUpdate}
                         className="h-10 min-w-40 rounded-md border border-zinc-200 bg-white px-3 text-sm"
                       >
                         {SHIFT_OPTIONS.map((shift) => (
@@ -363,7 +365,7 @@ export default function ScheduleManagementClient({
                           </option>
                         ))}
                       </select>
-                      <Button type="button" variant="outline" size="icon" onClick={() => removePatternRow(row.id)} disabled={patternRows.length <= 1}>
+                      <Button type="button" variant="outline" size="icon" onClick={() => removePatternRow(row.id)} disabled={!canUpdate || patternRows.length <= 1}>
                         <Trash2 />
                       </Button>
                     </div>
@@ -371,7 +373,7 @@ export default function ScheduleManagementClient({
                 </div>
 
                 <div className="flex flex-wrap gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={applyPatternToGrid} disabled={!teamId || !monthDays.length}>
+                  <Button type="button" variant="outline" onClick={applyPatternToGrid} disabled={!canUpdate || !teamId || !monthDays.length}>
                     Terapkan Pola ke Grid
                   </Button>
                 </div>
@@ -407,6 +409,7 @@ export default function ScheduleManagementClient({
                                 <select
                                   value={value}
                                   onChange={(event) => updateGridCell(participant.id, day.workDate, event.target.value)}
+                                  disabled={!canUpdate}
                                   className="h-9 min-w-30 rounded-md border border-zinc-200 bg-white px-2 text-sm"
                                 >
                                   <option value="">-</option>

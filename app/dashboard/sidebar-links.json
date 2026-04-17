@@ -1,67 +1,155 @@
-[
-  {
-    "id": "dashboard",
-    "type": "link",
-    "label": "Dashboard",
-    "href": "/dashboard",
-    "icon": "layout-dashboard"
+{
+  "rolePriority": {
+    "SUPERUSER": 100,
+    "ADMIN": 90,
+    "SUPERVISOR": 80,
+    "TEAM_LEADER": 70,
+    "LEADER TEKNISI": 70,
+    "TEKNISI": 20,
+    "ASS TEKNISI": 10,
+    "USER": 10
   },
-  {
-    "id": "users",
-    "type": "group",
-    "label": "Users",
-    "icon": "users",
-    "links": [
-      {
-        "label": "Kelola User",
-        "href": "/dashboard/users"
-      },
-      {
-        "label": "Role",
-        "href": "/dashboard/roles"
+  "items": [
+    {
+      "id": "dashboard",
+      "type": "link",
+      "label": "Dashboard",
+      "href": "/dashboard",
+      "icon": "layout-dashboard",
+      "permission": {
+        "key": "dashboard",
+        "viewMinPriority": 0,
+        "crudMinPriority": {
+          "create": 100,
+          "update": 100,
+          "delete": 100
+        }
       }
-    ]
-  },
-  {
-    "id": "team",
-    "type": "group",
-    "label": "management",
-    "icon": "network",
-    "links": [
-      {
-        "label": "Kelola Tim",
-        "href": "/dashboard/management/kelola-tim"
-      },
-      {
-        "label": "Kelola Jadwal",
-        "href": "/dashboard/management/kelola-jadwal"
+    },
+    {
+      "id": "users",
+      "type": "group",
+      "label": "Users",
+      "icon": "users",
+      "links": [
+        {
+          "label": "Kelola User",
+          "href": "/dashboard/users",
+          "permission": {
+            "key": "users",
+            "viewMinPriority": 80,
+            "crudMinPriority": {
+              "create": 80,
+              "update": 80,
+              "delete": 100
+            }
+          }
+        },
+        {
+          "label": "Role",
+          "href": "/dashboard/roles",
+          "permission": {
+            "key": "roles",
+            "viewMinPriority": 100,
+            "crudMinPriority": {
+              "create": 100,
+              "update": 100,
+              "delete": 100
+            }
+          }
+        },
+        {
+          "label": "Master Permission",
+          "href": "/dashboard/roles/master-permission",
+          "permission": {
+            "key": "permissions-master",
+            "viewMinPriority": 100,
+            "crudMinPriority": {
+              "create": 100,
+              "update": 100,
+              "delete": 100
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "team",
+      "type": "group",
+      "label": "Management",
+      "icon": "network",
+      "links": [
+        {
+          "label": "Kelola Tim",
+          "href": "/dashboard/management/kelola-tim",
+          "permission": {
+            "key": "management-teams",
+            "viewMinPriority": 80,
+            "crudMinPriority": {
+              "create": 80,
+              "update": 80,
+              "delete": 80
+            }
+          }
+        },
+        {
+          "label": "Kelola Jadwal",
+          "href": "/dashboard/management/kelola-jadwal",
+          "permission": {
+            "key": "management-schedules",
+            "viewMinPriority": 80,
+            "crudMinPriority": {
+              "create": 80,
+              "update": 80,
+              "delete": 80
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "sparepart",
+      "type": "link",
+      "label": "Sparepart",
+      "icon": "package",
+      "href": "/dashboard/sparepart",
+      "permission": {
+        "key": "sparepart",
+        "viewMinPriority": 10,
+        "crudMinPriority": {
+          "create": 60,
+          "update": 60,
+          "delete": 80
+        }
       }
-    ]
-  },
-  {
-    "id": "sparepart",
-    "type": "link",
-    "label": "Sparepart",
-    "icon": "package",
-    "href": "/dashboard/sparepart"
-  },
-  {
-    "id": "attendance",
-    "type": "link",
-    "label": "Absensi",
-    "icon": "check",
-    "href": "/dashboard/absensi"
-  },
-  {
-    "id": "analytics",
-    "type": "placeholder",
-    "label": "Analytics",
-    "icon": "chart-column-increasing"
-  },
-  {
-    "id": "settings",
-    "type": "placeholder",
-    "label": "Settings",
-    "icon": "settings"
-  }
-]
+    },
+    {
+      "id": "attendance",
+      "type": "link",
+      "label": "Absensi",
+      "icon": "check",
+      "href": "/dashboard/absensi",
+      "permission": {
+        "key": "attendance",
+        "viewMinPriority": 10,
+        "crudMinPriority": {
+          "create": 10,
+          "update": 10,
+          "delete": 80
+        }
+      }
+    },
+    {
+      "id": "analytics",
+      "type": "placeholder",
+      "label": "Analytics",
+      "icon": "chart-column-increasing"
+    },
+    {
+      "id": "settings",
+      "type": "placeholder",
+      "label": "Settings",
+      "icon": "settings"
+    }
+  ]
+}

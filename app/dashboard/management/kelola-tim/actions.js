@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { TEAM_LEADER_ROLE } from "@/app/dashboard/management/kelola-tim/constants";
 
@@ -150,7 +150,7 @@ async function validateTeamInput({ name, leaderId, memberIds, teamId }) {
 }
 
 export async function createTeamAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("management-teams", "create");
 
   const delegate = ensureTeamDelegate();
   if (delegate.error) {
@@ -192,7 +192,7 @@ export async function createTeamAction(formData) {
 }
 
 export async function updateTeamAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("management-teams", "update");
 
   const delegate = ensureTeamDelegate();
   if (delegate.error) {
@@ -254,7 +254,7 @@ export async function updateTeamAction(formData) {
 }
 
 export async function deleteTeamAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("management-teams", "delete");
 
   const delegate = ensureTeamDelegate();
   if (delegate.error) {

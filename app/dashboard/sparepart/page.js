@@ -1,5 +1,5 @@
 import SparepartCardClient from "@/app/dashboard/sparepart/sparepart-card-client";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function SparepartPage() {
-  await requireAuthenticatedUser();
+  const { evaluator } = await requirePagePermission("sparepart", "view");
 
   if (!prisma.sparepart?.findMany) {
     return <SparepartCardClient spareparts={[]} initError="Model sparepart belum siap. Jalankan: npm run prisma:generate && npm run prisma:push" />;
@@ -45,5 +45,12 @@ export default async function SparepartPage() {
     })),
   }));
 
-  return <SparepartCardClient spareparts={normalizedSpareparts} />;
+  return (
+    <SparepartCardClient
+      spareparts={normalizedSpareparts}
+      canCreate={evaluator.canCrud("sparepart", "create")}
+      canUpdate={evaluator.canCrud("sparepart", "update")}
+      canDelete={evaluator.canCrud("sparepart", "delete")}
+    />
+  );
 }

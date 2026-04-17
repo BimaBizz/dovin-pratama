@@ -1,5 +1,5 @@
 import TeamManagementClient from "@/app/dashboard/management/kelola-tim/team-management-client";
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 import { TEAM_LEADER_ROLE } from "./constants";
@@ -47,7 +47,7 @@ async function buildSearchFilter(search) {
 }
 
 export default async function KelolaTimPage({ searchParams }) {
-  await requireSuperuser();
+  const { evaluator } = await requirePagePermission("management-teams", "view");
 
   const teamDelegate = prisma.team;
   const resolvedSearchParams = await searchParams;
@@ -220,6 +220,9 @@ export default async function KelolaTimPage({ searchParams }) {
       leaderCandidates={leaderCandidates}
       memberCandidates={memberCandidates}
       teamUsage={normalizedTeamUsage}
+      canCreate={evaluator.canCrud("management-teams", "create")}
+      canUpdate={evaluator.canCrud("management-teams", "update")}
+      canDelete={evaluator.canCrud("management-teams", "delete")}
       search={search}
       pagination={{
         currentPage,

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 function ensureRoleDelegate() {
@@ -18,7 +18,7 @@ function ensureRoleDelegate() {
 }
 
 export async function createRoleAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("roles", "create");
 
   const delegate = ensureRoleDelegate();
   if (delegate.error) {
@@ -47,7 +47,7 @@ export async function createRoleAction(formData) {
 }
 
 export async function updateRoleAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("roles", "update");
 
   const delegate = ensureRoleDelegate();
   if (delegate.error) {
@@ -88,7 +88,7 @@ export async function updateRoleAction(formData) {
 }
 
 export async function deleteRoleAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("roles", "delete");
 
   const delegate = ensureRoleDelegate();
   if (delegate.error) {

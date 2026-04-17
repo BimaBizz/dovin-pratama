@@ -1,5 +1,5 @@
 import RolesCrudClient from "@/app/dashboard/roles/roles-crud-client";
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -8,7 +8,7 @@ export const metadata = {
 };
 
 export default async function RolesPage() {
-  await requireSuperuser();
+  const { evaluator } = await requirePagePermission("roles", "view");
 
   const roleDelegate = prisma.roleEntry;
 
@@ -25,5 +25,12 @@ export default async function RolesPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  return <RolesCrudClient roles={roles} />;
+  return (
+    <RolesCrudClient
+      roles={roles}
+      canCreate={evaluator.canCrud("roles", "create")}
+      canUpdate={evaluator.canCrud("roles", "update")}
+      canDelete={evaluator.canCrud("roles", "delete")}
+    />
+  );
 }

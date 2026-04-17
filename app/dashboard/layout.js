@@ -5,8 +5,8 @@ import MobileSidebar from "@/app/dashboard/mobile-sidebar";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAuthenticatedUser } from "@/lib/auth";
+import { getPermissionEvaluator } from "@/lib/permissions";
 import { logoutAction } from "@/app/dashboard/actions";
-import sidebarLinks from "@/app/dashboard/sidebar-links.json";
 
 const iconMap = {
   "layout-dashboard": LayoutDashboard,
@@ -20,8 +20,10 @@ const iconMap = {
 
 export default async function DashboardLayout({ children }) {
   const session = await requireAuthenticatedUser();
+  const evaluator = await getPermissionEvaluator(session.user.role);
   const displayName = session.user.fullName || "Pengguna";
   const dispalyRole = session.user.role || "User";
+  const sidebarLinks = evaluator.getSidebarItems();
 
   return (
     <main className="min-h-screen bg-zinc-100 md:grid md:grid-cols-[270px_1fr]">
@@ -99,7 +101,7 @@ export default async function DashboardLayout({ children }) {
         <header className="border-b border-zinc-200 bg-white px-4 py-3 md:px-8">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <MobileSidebar displayName={displayName} />
+              <MobileSidebar displayName={displayName} navItems={sidebarLinks} />
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">{dispalyRole} Workspace</p>
                 <h1 className="text-lg font-semibold text-zinc-900">Professional Dashboard</h1>

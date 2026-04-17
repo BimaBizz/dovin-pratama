@@ -29,7 +29,13 @@ function Modal({ title, description, onClose, children }) {
   );
 }
 
-export default function RolesCrudClient({ roles = [], initError = "" }) {
+export default function RolesCrudClient({
+  roles = [],
+  initError = "",
+  canCreate = true,
+  canUpdate = true,
+  canDelete = true,
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [modal, setModal] = useState(null);
@@ -62,10 +68,12 @@ export default function RolesCrudClient({ roles = [], initError = "" }) {
           <CardTitle>CRUD Role</CardTitle>
           <CardDescription>Kelola master role dari submenu user ke role.</CardDescription>
         </div>
-        <Button type="button" onClick={() => setModal({ type: "create" })}>
-          <Plus />
-          Tambah Role
-        </Button>
+        {canCreate ? (
+          <Button type="button" onClick={() => setModal({ type: "create" })}>
+            <Plus />
+            Tambah Role
+          </Button>
+        ) : null}
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -84,19 +92,23 @@ export default function RolesCrudClient({ roles = [], initError = "" }) {
                   <td className="px-2 py-3 font-medium text-zinc-900">{role.name}</td>
                   <td className="px-2 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" type="button" onClick={() => setModal({ type: "edit", roleId: role.id })}>
-                        <PenSquare />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        type="button"
-                        onClick={() => setModal({ type: "delete", roleId: role.id })}
-                      >
-                        <Trash2 />
-                        Hapus
-                      </Button>
+                      {canUpdate ? (
+                        <Button size="sm" variant="outline" type="button" onClick={() => setModal({ type: "edit", roleId: role.id })}>
+                          <PenSquare />
+                          Edit
+                        </Button>
+                      ) : null}
+                      {canDelete ? (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          type="button"
+                          onClick={() => setModal({ type: "delete", roleId: role.id })}
+                        >
+                          <Trash2 />
+                          Hapus
+                        </Button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -113,7 +125,7 @@ export default function RolesCrudClient({ roles = [], initError = "" }) {
         </div>
       </CardContent>
 
-      {modal?.type === "create" ? (
+      {modal?.type === "create" && canCreate ? (
         <Modal title="Tambah Role" description="Tambahkan master role baru." onClose={() => setModal(null)}>
           <form
             className="space-y-3 max-h-[70vh] overflow-y-auto"
@@ -134,7 +146,7 @@ export default function RolesCrudClient({ roles = [], initError = "" }) {
         </Modal>
       ) : null}
 
-      {modal?.type === "edit" && selectedRole ? (
+      {modal?.type === "edit" && selectedRole && canUpdate ? (
         <Modal title="Edit Role" description="Perbarui data role." onClose={() => setModal(null)}>
           <form
             className="space-y-3"
@@ -156,7 +168,7 @@ export default function RolesCrudClient({ roles = [], initError = "" }) {
         </Modal>
       ) : null}
 
-      {modal?.type === "delete" && selectedRole ? (
+      {modal?.type === "delete" && selectedRole && canDelete ? (
         <Modal title="Hapus Role" description="Aksi ini tidak dapat dibatalkan." onClose={() => setModal(null)}>
           <form
             className="space-y-3"

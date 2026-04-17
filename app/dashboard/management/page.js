@@ -1,15 +1,20 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-
-import sidebarLinks from "@/app/dashboard/sidebar-links.json";
+import { requireAuthenticatedUser } from "@/lib/auth";
+import { getPermissionEvaluator } from "@/lib/permissions";
 
 export const metadata = {
   title: "Management",
   description: "Halaman management mengikuti konfigurasi sidebar",
 };
 
-export default function ManagementPage() {
+export default async function ManagementPage() {
+  const session = await requireAuthenticatedUser();
+  const evaluator = await getPermissionEvaluator(session.user.role);
+  const sidebarLinks = evaluator.getSidebarItems();
+
   const managementSections = sidebarLinks
     .filter((item) => item.type === "group")
     .map((item) => ({
@@ -17,6 +22,10 @@ export default function ManagementPage() {
       links: (item.links || []).filter((link) => link.href.startsWith("/dashboard/management")),
     }))
     .filter((item) => item.links.length > 0);
+
+  if (managementSections.length === 0) {
+    redirect("/dashboard");
+  }
 
   return (
     <div className="space-y-4">

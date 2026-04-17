@@ -5,7 +5,7 @@ import { mkdir, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import crypto from "node:crypto";
 
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 const MAX_IMAGES = 3;
@@ -110,7 +110,7 @@ function ensureSparepartDelegate() {
 }
 
 export async function createSparepartAction(formData) {
-  await requireAuthenticatedUser();
+  await requirePagePermission("sparepart", "create");
 
   const delegates = ensureSparepartDelegate();
   if (delegates.error) {
@@ -180,7 +180,7 @@ export async function createSparepartAction(formData) {
 }
 
 export async function updateSparepartAction(formData) {
-  await requireAuthenticatedUser();
+  await requirePagePermission("sparepart", "update");
 
   const delegates = ensureSparepartDelegate();
   if (delegates.error) {
@@ -313,7 +313,7 @@ export async function updateSparepartAction(formData) {
 }
 
 export async function deleteSparepartAction(formData) {
-  await requireAuthenticatedUser();
+  await requirePagePermission("sparepart", "delete");
 
   const delegates = ensureSparepartDelegate();
   if (delegates.error) {

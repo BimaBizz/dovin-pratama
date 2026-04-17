@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import { SHIFT_VALUES } from "@/app/dashboard/management/kelola-tim/constants";
 
@@ -84,7 +84,7 @@ function parseEntries(formData) {
 }
 
 export async function saveTeamScheduleGridAction(formData) {
-  await requireSuperuser();
+  await requirePagePermission("management-schedules", "update");
 
   const delegate = ensureScheduleDelegate();
   if (delegate.error) {

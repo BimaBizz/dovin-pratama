@@ -1,6 +1,6 @@
 import AttendanceClient from "@/app/dashboard/absensi/attendance-client";
 import { cleanupExpiredAttendancePhotos } from "@/lib/attendance-storage";
-import { requireAuthenticatedUser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -20,7 +20,7 @@ function toDateTimeString(value) {
 }
 
 export default async function AbsensiAnggotaPage() {
-  const session = await requireAuthenticatedUser();
+  const { session } = await requirePagePermission("attendance", "view");
 
   if (!prisma.attendanceRecord?.findMany) {
     return (

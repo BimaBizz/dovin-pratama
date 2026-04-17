@@ -1,5 +1,5 @@
 import ScheduleManagementClient from "@/app/dashboard/management/kelola-jadwal/schedule-management-client";
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -41,7 +41,7 @@ function normalizeMember(user) {
 }
 
 export default async function KelolaJadwalPage({ searchParams }) {
-  await requireSuperuser();
+  const { evaluator } = await requirePagePermission("management-schedules", "view");
 
   const teamDelegate = prisma.team;
   const assignmentDelegate = prisma.teamScheduleAssignment;
@@ -186,6 +186,7 @@ export default async function KelolaJadwalPage({ searchParams }) {
       participants={participants}
       assignments={normalizedAssignments}
       recentAssignments={recentAssignments}
+      canUpdate={evaluator.canCrud("management-schedules", "update")}
     />
   );
 }

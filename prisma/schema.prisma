@@ -168,3 +168,12 @@ model AttendanceRecord {
   @@index([attendedAt])
   @@index([photoExpiresAt])
 }
+
+model AccessControlConfig {
+  id              String   @id @default(uuid())
+  singletonKey    String   @unique @default("GLOBAL")
+  config          Json
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import {
+  Check,
   ChartColumnIncreasing,
   ChevronDown,
   LayoutDashboard,
@@ -16,7 +17,6 @@ import {
 } from "lucide-react";
 
 import { logoutAction } from "@/app/dashboard/actions";
-import sidebarLinks from "@/app/dashboard/sidebar-links.json";
 import { Button } from "@/components/ui/button";
 
 const iconMap = {
@@ -26,12 +26,13 @@ const iconMap = {
   "network": Network,
   "package": Package,
   "chart-column-increasing": ChartColumnIncreasing,
+  "check": Check,
 };
 
-export default function MobileSidebar({ displayName }) {
+export default function MobileSidebar({ displayName, navItems = [] }) {
   const [open, setOpen] = useState(false);
   const [openGroups, setOpenGroups] = useState(() =>
-    sidebarLinks
+    navItems
       .filter((item) => item.type === "group")
       .reduce((accumulator, item, index) => {
         accumulator[item.id] = index === 0;
@@ -72,7 +73,7 @@ export default function MobileSidebar({ displayName }) {
             </div>
 
             <nav className="space-y-1 p-3 text-sm">
-              {sidebarLinks.map((item) => {
+              {navItems.map((item) => {
                 const ItemIcon = iconMap[item.icon] || Settings;
 
                 if (item.type === "link") {

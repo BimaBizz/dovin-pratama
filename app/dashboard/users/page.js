@@ -1,5 +1,5 @@
 import UsersCrudClient from "@/app/dashboard/users/users-crud-client";
-import { requireSuperuser } from "@/lib/auth";
+import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
 export const metadata = {
@@ -26,7 +26,7 @@ function buildSearchFilter(search) {
 }
 
 export default async function UsersPage({ searchParams }) {
-  await requireSuperuser();
+  const { evaluator } = await requirePagePermission("users", "view");
 
   const resolvedSearchParams = await searchParams;
   const search = String(resolvedSearchParams?.search || "").trim();
@@ -78,6 +78,9 @@ export default async function UsersPage({ searchParams }) {
     <UsersCrudClient
       users={users}
       roleOptions={roleOptions}
+      canCreate={evaluator.canCrud("users", "create")}
+      canUpdate={evaluator.canCrud("users", "update")}
+      canDelete={evaluator.canCrud("users", "delete")}
       pagination={{
         currentPage,
         totalPages,

@@ -57,6 +57,9 @@ export default function TeamManagementClient({
   pagination,
   search = "",
   initError = "",
+  canCreate = true,
+  canUpdate = true,
+  canDelete = true,
 }) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
@@ -243,10 +246,12 @@ export default function TeamManagementClient({
             Buat, edit, dan hapus tim. Leader wajib role {TEAM_LEADER_ROLE} dan user tidak bisa dipakai dua kali di tim berbeda.
           </CardDescription>
         </div>
-        <Button type="button" onClick={openCreateModal}>
-          <Plus />
-          Buat Tim
-        </Button>
+        {canCreate ? (
+          <Button type="button" onClick={openCreateModal}>
+            <Plus />
+            Buat Tim
+          </Button>
+        ) : null}
       </CardHeader>
 
       <CardContent className="space-y-4">
@@ -294,19 +299,23 @@ export default function TeamManagementClient({
                   </td>
                   <td className="px-2 py-3">
                     <div className="flex justify-end gap-2">
-                      <Button size="sm" variant="outline" type="button" onClick={() => openEditModal(team)}>
-                        <PenSquare />
-                        Edit
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="destructive"
-                        type="button"
-                        onClick={() => setModal({ type: "delete", teamId: team.id })}
-                      >
-                        <Trash2 />
-                        Hapus
-                      </Button>
+                      {canUpdate ? (
+                        <Button size="sm" variant="outline" type="button" onClick={() => openEditModal(team)}>
+                          <PenSquare />
+                          Edit
+                        </Button>
+                      ) : null}
+                      {canDelete ? (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          type="button"
+                          onClick={() => setModal({ type: "delete", teamId: team.id })}
+                        >
+                          <Trash2 />
+                          Hapus
+                        </Button>
+                      ) : null}
                     </div>
                   </td>
                 </tr>
@@ -354,7 +363,7 @@ export default function TeamManagementClient({
         {message ? <p className="text-sm text-red-600">{message}</p> : null}
       </CardContent>
 
-      {modal?.type === "create" ? (
+      {modal?.type === "create" && canCreate ? (
         <Modal
           title="Buat Tim"
           description="Pilih leader, lalu pilih anggota tim (minimal 1 user)."
@@ -438,7 +447,7 @@ export default function TeamManagementClient({
         </Modal>
       ) : null}
 
-      {modal?.type === "edit" && selectedTeam ? (
+      {modal?.type === "edit" && selectedTeam && canUpdate ? (
         <Modal title="Edit Tim" description="Perbarui nama tim, leader, dan anggota tim." onClose={closeModal}>
           <form
             className="space-y-3"
@@ -516,7 +525,7 @@ export default function TeamManagementClient({
         </Modal>
       ) : null}
 
-      {modal?.type === "delete" && selectedTeam ? (
+      {modal?.type === "delete" && selectedTeam && canDelete ? (
         <Modal title="Hapus Tim" description="Leader dan anggota tim akan kembali tersedia." onClose={closeModal}>
           <form
             className="space-y-3"

@@ -72,7 +72,13 @@ function SparepartFormFields({ mode, sparepart }) {
   );
 }
 
-export default function SparepartCardClient({ spareparts = [], initError = "" }) {
+export default function SparepartCardClient({
+  spareparts = [],
+  initError = "",
+  canCreate = true,
+  canUpdate = true,
+  canDelete = true,
+}) {
   const router = useRouter();
   const [pending, startTransition] = useTransition();
   const [modal, setModal] = useState(null);
@@ -125,10 +131,12 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
             <CardTitle>Sparepart</CardTitle>
             <CardDescription>Kelola data sparepart dengan tampilan card. Klik card untuk lihat detail sparepart.</CardDescription>
           </div>
-          <Button type="button" onClick={() => setModal({ type: "create" })}>
-            <Plus />
-            Tambah Sparepart
-          </Button>
+          {canCreate ? (
+            <Button type="button" onClick={() => setModal({ type: "create" })}>
+              <Plus />
+              Tambah Sparepart
+            </Button>
+          ) : null}
         </CardHeader>
         <CardContent>
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
@@ -151,23 +159,27 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
                 </Link>
 
                 <div className="flex gap-2 border-t border-zinc-200 p-3">
-                  <Button
-                    type="button"
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      setRemovedImageIds([]);
-                      setModal({ type: "edit", sparepartId: sparepart.id });
-                    }}
-                    className="flex-1"
-                  >
-                    <PenSquare />
-                    Edit
-                  </Button>
-                  <Button type="button" size="sm" variant="destructive" onClick={() => setModal({ type: "delete", sparepartId: sparepart.id })} className="flex-1">
-                    <Trash2 />
-                    Hapus
-                  </Button>
+                  {canUpdate ? (
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setRemovedImageIds([]);
+                        setModal({ type: "edit", sparepartId: sparepart.id });
+                      }}
+                      className="flex-1"
+                    >
+                      <PenSquare />
+                      Edit
+                    </Button>
+                  ) : null}
+                  {canDelete ? (
+                    <Button type="button" size="sm" variant="destructive" onClick={() => setModal({ type: "delete", sparepartId: sparepart.id })} className="flex-1">
+                      <Trash2 />
+                      Hapus
+                    </Button>
+                  ) : null}
                 </div>
               </article>
             ))}
@@ -178,7 +190,7 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
         </CardContent>
       </Card>
 
-      {modal?.type === "create" ? (
+      {modal?.type === "create" && canCreate ? (
         <Modal title="Tambah Sparepart" description="Isi data sparepart dan upload maksimal 3 gambar." onClose={closeModal}>
           <form
             className="space-y-4"
@@ -196,7 +208,7 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
         </Modal>
       ) : null}
 
-      {modal?.type === "edit" && selectedSparepart ? (
+      {modal?.type === "edit" && selectedSparepart && canUpdate ? (
         <Modal title="Edit Sparepart" description="Perbarui data sparepart dan atur gambar yang ingin dihapus." onClose={closeModal}>
           <form
             className="space-y-4"
@@ -240,7 +252,7 @@ export default function SparepartCardClient({ spareparts = [], initError = "" })
         </Modal>
       ) : null}
 
-      {modal?.type === "delete" && selectedSparepart ? (
+      {modal?.type === "delete" && selectedSparepart && canDelete ? (
         <Modal title="Hapus Sparepart" description="Aksi ini akan menghapus data sparepart beserta semua gambarnya." onClose={closeModal}>
           <form
             className="space-y-3"
