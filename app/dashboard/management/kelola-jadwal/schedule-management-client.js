@@ -234,18 +234,12 @@ export default function ScheduleManagementClient({
   }
 
   function exportSchedule(format) {
-    if (!teamId) {
-      setMessage("Pilih tim terlebih dahulu.");
-      return;
-    }
-
     if (!month) {
       setMessage("Pilih periode bulan terlebih dahulu.");
       return;
     }
 
     const params = new URLSearchParams({
-      teamId,
       month,
       format,
     });
@@ -316,11 +310,11 @@ export default function ScheduleManagementClient({
             </CardDescription>
           </div>
           <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
-            <Button type="button" variant="outline" disabled={!teamId || !month} onClick={() => exportSchedule("excel")}>
+            <Button type="button" variant="outline" disabled={!month} onClick={() => exportSchedule("excel")}>
               <Download />
               Export Excel
             </Button>
-            <Button type="button" variant="outline" disabled={!teamId || !month} onClick={() => exportSchedule("pdf")}>
+            <Button type="button" variant="outline" disabled={!month} onClick={() => exportSchedule("pdf")}>
               <Download />
               Export PDF
             </Button>
@@ -354,7 +348,7 @@ export default function ScheduleManagementClient({
                   </Button>
                 </div>
 
-                <div className="space-y-2">
+                <div className="flex flex-wrap gap-2">
                   {patternRows.map((row, index) => (
                     <div key={row.id} className="flex items-center gap-2">
                       <div className="w-14 text-sm font-medium text-zinc-500">#{index + 1}</div>
@@ -384,41 +378,12 @@ export default function ScheduleManagementClient({
               </div>
 
               <div className="space-y-2 rounded-lg border border-zinc-200 p-4">
-                <p className="text-sm font-semibold text-zinc-900">Preview Pola Harian</p>
-                <div className="overflow-x-auto">
-                  <table className="w-full min-w-140 text-left text-sm">
-                    <thead>
-                      <tr className="border-b border-zinc-200 text-zinc-500">
-                        <th className="px-2 py-3">Tanggal</th>
-                        <th className="px-2 py-3">Hari</th>
-                        <th className="px-2 py-3">Shift</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {patternPreview.map((item) => (
-                        <tr key={item.workDate} className="border-b border-zinc-100">
-                          <td className="px-2 py-3 font-medium text-zinc-900">{item.workDate}</td>
-                          <td className="px-2 py-3 text-zinc-700">{item.dayName}</td>
-                          <td className="px-2 py-3">
-                            <span className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold ${getShiftBadgeClass(item.shiftCode)}`}>
-                              {item.shiftCode || "-"}
-                            </span>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
-
-              <div className="space-y-2 rounded-lg border border-zinc-200 p-4">
                 <p className="text-sm font-semibold text-zinc-900">Grid Manual per Anggota</p>
                 <div className="overflow-x-auto">
                   <table className="w-full min-w-275 text-left text-sm">
                     <thead>
                       <tr className="border-b border-zinc-200 text-zinc-500">
-                        <th className="sticky left-0 z-10 bg-white px-2 py-3">Nama Anggota</th>
-                        <th className="sticky left-65 z-10 bg-white px-2 py-3">Role</th>
+                        <th className="sticky left-0 z-10 bg-white px-2 py-3 min-w-40">Nama Anggota</th>
                         {monthDays.map((day) => (
                           <th key={day.workDate} className="px-2 py-3 whitespace-nowrap">
                             {day.workDate}
@@ -431,9 +396,9 @@ export default function ScheduleManagementClient({
                       {participants.map((participant) => (
                         <tr key={participant.id} className="border-b border-zinc-100">
                           <td className="sticky left-0 z-10 bg-white px-2 py-3 font-medium text-zinc-900">
-                            {getVisibleUserName(participant)}
+                            {getVisibleUserName(participant)}<br/>
+                            <span className="text-xs text-zinc-500">{participant.role}</span>
                           </td>
-                          <td className="sticky left-65 z-10 bg-white px-2 py-3 text-zinc-700">{participant.role}</td>
                           {monthDays.map((day) => {
                             const value = gridMap[participant.id]?.[day.workDate] || "";
 
@@ -467,47 +432,6 @@ export default function ScheduleManagementClient({
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Daftar Jadwal Terbaru</CardTitle>
-          <CardDescription>Menampilkan 30 perubahan jadwal terbaru untuk monitoring cepat.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm">
-              <thead>
-                <tr className="border-b border-zinc-200 text-zinc-500">
-                  <th className="px-2 py-3">Tanggal</th>
-                  <th className="px-2 py-3">Tim</th>
-                  <th className="px-2 py-3">Anggota</th>
-                  <th className="px-2 py-3">Shift</th>
-                </tr>
-              </thead>
-              <tbody>
-                {recentAssignments.map((assignment) => (
-                  <tr key={assignment.id} className="border-b border-zinc-100">
-                    <td className="px-2 py-3 text-zinc-700">{assignment.workDate}</td>
-                    <td className="px-2 py-3 font-medium text-zinc-900">{assignment.teamName}</td>
-                    <td className="px-2 py-3 text-zinc-700">{assignment.userName}</td>
-                    <td className="px-2 py-3">
-                      <span className={`inline-flex items-center rounded-md border px-2 py-1 text-xs font-semibold ${getShiftBadgeClass(assignment.shiftCode)}`}>
-                        {assignment.shiftCode}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-                {recentAssignments.length === 0 ? (
-                  <tr>
-                    <td className="px-2 py-4 text-zinc-500" colSpan={4}>
-                      Belum ada jadwal.
-                    </td>
-                  </tr>
-                ) : null}
-              </tbody>
-            </table>
-          </div>
-        </CardContent>
-      </Card>
     </div>
   );
 }
