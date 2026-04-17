@@ -19,6 +19,7 @@ model User {
   ledTeam      Team?     @relation("TeamLeader")
   teamMember   TeamMember?
   scheduleAssignments TeamScheduleAssignment[]
+  attendanceRecords AttendanceRecord[]
   userDocument UserDocument?
   sessions     Session[]
   createdAt    DateTime  @default(now())
@@ -119,4 +120,23 @@ model UserDocument {
   updatedAt    DateTime @updatedAt
 
   @@index([userId])
+}
+
+model AttendanceRecord {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendedAt   DateTime @default(now())
+  latitude     Float
+  longitude    Float
+  accuracy     Float?
+  locationLabel String?
+  photoPath    String?
+  photoMimeType String?
+  photoExpiresAt DateTime?
+  createdAt    DateTime @default(now())
+
+  @@index([userId])
+  @@index([attendedAt])
+  @@index([photoExpiresAt])
 }

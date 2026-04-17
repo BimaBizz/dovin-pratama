@@ -17,6 +17,7 @@
 /.next/
 /out/
 /storage/
+/tmp/
 
 # production
 /build

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network } from "lucide-react";
+import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check } from "lucide-react";
 
 import MobileSidebar from "@/app/dashboard/mobile-sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -13,6 +13,7 @@ const iconMap = {
   users: Users,
   settings: Settings,
   "network": Network,
+  "check": Check,
   "chart-column-increasing": ChartColumnIncreasing,
 };
 

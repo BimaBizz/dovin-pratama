@@ -39,6 +39,13 @@
     ]
   },
   {
+    "id": "attendance",
+    "type": "link",
+    "label": "Absensi",
+    "icon": "check",
+    "href": "/dashboard/absensi"
+  },
+  {
     "id": "analytics",
     "type": "placeholder",
     "label": "Analytics",
