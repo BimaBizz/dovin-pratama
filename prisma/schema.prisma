@@ -28,6 +28,17 @@ model User {
   updatedAt    DateTime  @updatedAt
 }
 
+model AttendanceLocation {
+  id           String   @id @default(uuid())
+  locationName String   @unique
+  priority     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([locationName])
+  @@index([priority])
+}
+
 model Team {
   id        String   @id @default(uuid())
   name      String   @unique

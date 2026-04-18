@@ -164,7 +164,7 @@
           "href": "/dashboard/absensi/rekap",
           "permission": {
             "key": "attendance-recap",
-            "viewMinPriority": 80,
+            "viewMinPriority": 70,
             "crudMinPriority": {
               "create": 100,
               "update": 100,
