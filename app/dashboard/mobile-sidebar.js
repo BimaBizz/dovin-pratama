@@ -14,6 +14,7 @@ import {
   X,
   Network,
   Package,
+  KanbanSquare,
 } from "lucide-react";
 
 import { logoutAction } from "@/app/dashboard/actions";
@@ -25,6 +26,7 @@ const iconMap = {
   settings: Settings,
   "network": Network,
   "package": Package,
+  "kanban-square": KanbanSquare,
   "chart-column-increasing": ChartColumnIncreasing,
   "check": Check,
 };

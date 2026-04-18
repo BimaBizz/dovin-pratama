@@ -9,6 +9,29 @@ import { prisma } from "@/lib/prisma";
 
 const WEEKDAY_LABELS_ID = ["MIN", "SEN", "SEL", "RAB", "KAM", "JUM", "SAB"];
 const SHIFT_OFF_VALUE = "L";
+const ATTENDANCE_FILL_KIND = {
+  NONE: "NONE",
+  PRESENT: "PRESENT",
+  ABSENT: "ABSENT",
+  SICK: "SICK",
+  LEAVE: "LEAVE",
+};
+
+const EXCEL_FILL_BY_KIND = {
+  [ATTENDANCE_FILL_KIND.NONE]: null,
+  [ATTENDANCE_FILL_KIND.PRESENT]: "FFFFFFFF",
+  [ATTENDANCE_FILL_KIND.ABSENT]: "FFFFC7CE",
+  [ATTENDANCE_FILL_KIND.SICK]: "FFFFFF99",
+  [ATTENDANCE_FILL_KIND.LEAVE]: "FFBDD7EE",
+};
+
+const PDF_FILL_BY_KIND = {
+  [ATTENDANCE_FILL_KIND.NONE]: null,
+  [ATTENDANCE_FILL_KIND.PRESENT]: rgb(1, 1, 1),
+  [ATTENDANCE_FILL_KIND.ABSENT]: rgb(1, 0.78, 0.81),
+  [ATTENDANCE_FILL_KIND.SICK]: rgb(1, 0.97, 0.6),
+  [ATTENDANCE_FILL_KIND.LEAVE]: rgb(0.74, 0.84, 0.93),
+};
 
 function isValidDate(value) {
   return /^\d{4}-\d{2}-\d{2}$/.test(String(value || "").trim());
@@ -92,32 +115,32 @@ function getPositionLabel(role) {
   return role || "-";
 }
 
-function resolveAttendanceMark({ shiftCode, attendanceRecord, dayDateKey, todayDateKey }) {
+function resolveAttendanceVisual({ shiftCode, attendanceRecord, dayDateKey, todayDateKey }) {
   if (!shiftCode) {
-    return "";
+    return { mark: "", fillKind: ATTENDANCE_FILL_KIND.NONE };
   }
 
   if (shiftCode === SHIFT_OFF_VALUE) {
-    return SHIFT_OFF_VALUE;
+    return { mark: SHIFT_OFF_VALUE, fillKind: ATTENDANCE_FILL_KIND.NONE };
   }
 
   if (attendanceRecord) {
     if (attendanceRecord.status === ATTENDANCE_STATUS.SICK) {
-      return "S";
+      return { mark: "I", fillKind: ATTENDANCE_FILL_KIND.SICK };
     }
 
     if (attendanceRecord.status === ATTENDANCE_STATUS.LEAVE) {
-      return "C";
+      return { mark: "C", fillKind: ATTENDANCE_FILL_KIND.LEAVE };
     }
 
-    return "✓";
+    return { mark: "✓", fillKind: ATTENDANCE_FILL_KIND.PRESENT };
   }
 
   if (dayDateKey <= todayDateKey) {
-    return "✗";
+    return { mark: "✗", fillKind: ATTENDANCE_FILL_KIND.ABSENT };
   }
 
-  return "";
+  return { mark: "", fillKind: ATTENDANCE_FILL_KIND.NONE };
 }
 
 async function ensureRecapPermission() {
@@ -135,14 +158,13 @@ async function ensureRecapPermission() {
   return { session, evaluator };
 }
 
-async function loadRecapExportData({ month, teamId, shiftFilter }) {
+async function loadRecapExportData({ month, shiftFilter }) {
   const monthRange = getMonthRange(month);
   if (!monthRange) {
     return { error: "month tidak valid" };
   }
 
   const teams = await prisma.team.findMany({
-    where: teamId ? { id: teamId } : undefined,
     orderBy: { name: "asc" },
     select: {
       id: true,
@@ -235,7 +257,7 @@ async function loadRecapExportData({ month, teamId, shiftFilter }) {
 
   return {
     groups,
-    teamLabel: teamId ? teams[0]?.name || "-" : "SEMUA TIM",
+    teamLabel: "SEMUA TIM",
   };
 }
 
@@ -288,9 +310,9 @@ async function createTemplateExcelBuffer({ month, groups, teamLabel, shiftFilter
     worksheet.addRow([`Team ${group.teamName.toUpperCase()}`]);
 
     group.participants.forEach((participant) => {
-      const marks = monthDays.map((day) => {
+      const visuals = monthDays.map((day) => {
         const item = group.scheduleMap.get(`${participant.id}__${day.dateKey}`);
-        return resolveAttendanceMark({
+        return resolveAttendanceVisual({
           shiftCode: item?.shiftCode,
           attendanceRecord: item?.attendanceRecord,
           dayDateKey: day.dateKey,
@@ -298,12 +320,28 @@ async function createTemplateExcelBuffer({ month, groups, teamLabel, shiftFilter
         });
       });
 
-      worksheet.addRow([
+      const marks = visuals.map((visual) => visual.mark);
+
+      const row = worksheet.addRow([
         runningNumber,
         participant.fullName || participant.email || "-",
         getPositionLabel(participant.role),
         ...marks,
       ]);
+
+      visuals.forEach((visual, index) => {
+        const fillColor = EXCEL_FILL_BY_KIND[visual.fillKind];
+        if (!fillColor) {
+          return;
+        }
+
+        const cell = row.getCell(4 + index);
+        cell.fill = {
+          type: "pattern",
+          pattern: "solid",
+          fgColor: { argb: fillColor },
+        };
+      });
 
       runningNumber += 1;
     });
@@ -375,17 +413,19 @@ async function createPdfBuffer({ month, groups, teamLabel, shiftFilter }) {
   };
 
   const drawGridRow = (currentPage, yTop, values, options = {}) => {
-    const { isBold = false, alignOverrides = {} } = options;
+    const { isBold = false, alignOverrides = {}, fillOverrides = {} } = options;
 
     for (let index = 0; index < normalizedColumns.length; index += 1) {
       const x = columnPositions[index];
       const width = normalizedColumns[index];
+      const fillColor = fillOverrides[index] || null;
 
       currentPage.drawRectangle({
         x,
         y: yTop - rowHeight,
         width,
         height: rowHeight,
+        color: fillColor || undefined,
         borderColor: rgb(0, 0, 0),
         borderWidth: 0.6,
       });
@@ -414,7 +454,7 @@ async function createPdfBuffer({ month, groups, teamLabel, shiftFilter }) {
       "REKAPITULASI ABSENSI PT. DOVIN PRATAMA",
       "PELAKSANAAN PEKERJAAN KONTRAK PAYUNG PEMELIHARAAN DAN PERAWATAN PASSENGER MOVEMENT SYSTEM",
       `DI BANDAR UDARA INTERNASIONAL I GUSTI NGURAH RAI - BALI PERIODE ${getMonthLabel(month)}`,
-+      `TIM ${String(teamLabel || "SEMUA TIM").toUpperCase()}${shiftFilter ? ` · SHIFT ${shiftFilter}` : ""}`,
+      `TIM ${String(teamLabel || "SEMUA TIM").toUpperCase()}${shiftFilter ? ` · SHIFT ${shiftFilter}` : ""}`,
     ];
 
     for (const line of titleLines) {
@@ -465,9 +505,9 @@ async function createPdfBuffer({ month, groups, teamLabel, shiftFilter }) {
         cursorY = drawPageHeader(page);
       }
 
-      const marks = monthDays.map((day) => {
+      const visuals = monthDays.map((day) => {
         const item = group.scheduleMap.get(`${participant.id}__${day.dateKey}`);
-        return resolveAttendanceMark({
+        return resolveAttendanceVisual({
           shiftCode: item?.shiftCode,
           attendanceRecord: item?.attendanceRecord,
           dayDateKey: day.dateKey,
@@ -475,12 +515,24 @@ async function createPdfBuffer({ month, groups, teamLabel, shiftFilter }) {
         });
       });
 
+      const marks = visuals.map((visual) => visual.mark);
+      const fillOverrides = visuals.reduce((accumulator, visual, index) => {
+        const fillColor = PDF_FILL_BY_KIND[visual.fillKind];
+        if (fillColor) {
+          accumulator[3 + index] = fillColor;
+        }
+
+        return accumulator;
+      }, {});
+
       cursorY = drawGridRow(page, cursorY, [
         runningNumber,
         participant.fullName || participant.email || "-",
         getPositionLabel(participant.role),
         ...marks,
-      ]);
+      ], {
+        fillOverrides,
+      });
 
       runningNumber += 1;
     }
@@ -497,7 +549,6 @@ export async function GET(request) {
 
   const { searchParams } = new URL(request.url);
   const date = String(searchParams.get("date") || "").trim();
-  const teamId = String(searchParams.get("teamId") || "").trim();
   const shift = String(searchParams.get("shift") || "").trim();
   const format = String(searchParams.get("format") || "excel").trim().toLowerCase();
 
@@ -514,7 +565,7 @@ export async function GET(request) {
   }
 
   const month = date.slice(0, 7);
-  const recapData = await loadRecapExportData({ month, teamId, shiftFilter: shift });
+  const recapData = await loadRecapExportData({ month, shiftFilter: shift });
 
   if (recapData.error) {
     return new NextResponse(recapData.error, { status: recapData.error === "Tim tidak ditemukan" ? 404 : 400 });
@@ -534,7 +585,7 @@ export async function GET(request) {
         shiftFilter: shift,
       });
 
-  const fileBaseName = `REKAP-ABSEN-${month}${teamId ? `-${recapData.teamLabel.replace(/\s+/g, "-").toUpperCase()}` : ""}${shift ? `-${shift.replace(/\//g, "-")}` : ""}`;
+  const fileBaseName = `REKAP-ABSEN-${month}${shift ? `-${shift.replace(/\//g, "-")}` : ""}`;
 
   return new NextResponse(buffer, {
     headers: {

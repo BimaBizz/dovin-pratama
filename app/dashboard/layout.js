@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, ChevronDown, Package } from "lucide-react";
+import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, ChevronDown, Package, KanbanSquare } from "lucide-react";
 
 import MobileSidebar from "@/app/dashboard/mobile-sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -15,6 +15,7 @@ const iconMap = {
   "network": Network,
   "check": Check,
   "package": Package,
+  "kanban-square": KanbanSquare,
   "chart-column-increasing": ChartColumnIncreasing,
 };
 
