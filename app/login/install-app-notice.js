@@ -108,9 +108,9 @@ export default function InstallAppNotice() {
 
   return (
     <div className="absolute left-4 right-4 bottom-4 z-50 sm:left-auto sm:right-6 sm:w-90">
-      <div className="rounded-md border border-amber-200 bg-amber-50 px-3 py-3 shadow-md">
-        <p className="text-sm font-medium text-amber-900">Silakan install app ini pada device anda.</p>
-        <Button type="button" variant="outline" className="mt-2 w-full" onClick={handleInstall} disabled={!iosMode && !installReady}>
+      <div className="rounded-md border bg-white px-3 py-3 shadow-md">
+        <p className="text-sm font-medium text-primary">Silakan install app ini pada device anda.</p>
+        <Button type="button" variant="default" className="mt-2 w-full" onClick={handleInstall} disabled={!iosMode && !installReady}>
           Install
         </Button>
         {message ? <p className="mt-2 text-xs text-amber-900">{message}</p> : null}
