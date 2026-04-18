@@ -141,38 +141,6 @@
       ]
     },
     {
-      "id": "sparepart",
-      "type": "link",
-      "label": "Sparepart",
-      "icon": "package",
-      "href": "/dashboard/sparepart",
-      "permission": {
-        "key": "sparepart",
-        "viewMinPriority": 10,
-        "crudMinPriority": {
-          "create": 60,
-          "update": 60,
-          "delete": 80
-        }
-      }
-    },
-    {
-      "id": "tasks",
-      "type": "link",
-      "label": "Tugas",
-      "icon": "kanban-square",
-      "href": "/dashboard/tugas",
-      "permission": {
-        "key": "tasks",
-        "viewMinPriority": 10,
-        "crudMinPriority": {
-          "create": 10,
-          "update": 10,
-          "delete": 80
-        }
-      }
-    },
-    {
       "id": "attendance",
       "type": "group",
       "label": "Absensi",
@@ -218,6 +186,38 @@
           }
         }
       ]
+    },
+    {
+      "id": "sparepart",
+      "type": "link",
+      "label": "Sparepart",
+      "icon": "package",
+      "href": "/dashboard/sparepart",
+      "permission": {
+        "key": "sparepart",
+        "viewMinPriority": 10,
+        "crudMinPriority": {
+          "create": 60,
+          "update": 60,
+          "delete": 80
+        }
+      }
+    },
+    {
+      "id": "tasks",
+      "type": "link",
+      "label": "Tugas",
+      "icon": "kanban-square",
+      "href": "/dashboard/tugas",
+      "permission": {
+        "key": "tasks",
+        "viewMinPriority": 10,
+        "crudMinPriority": {
+          "create": 10,
+          "update": 10,
+          "delete": 80
+        }
+      }
     },
     {
       "id": "analytics",
