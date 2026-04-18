@@ -60,7 +60,7 @@ export async function GET(request, { params }) {
     return new Response("Dokumen tidak ditemukan", { status: 404 });
   }
 
-  const absolutePath = path.join(process.cwd(), storagePath.replace(/^\//, ""));
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), storagePath.replace(/^\//, ""));
 
   let fileBuffer;
   try {

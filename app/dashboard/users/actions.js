@@ -38,7 +38,7 @@ async function saveDocumentFile(userId, key, file) {
   await mkdir(directory, { recursive: true });
 
   const storagePath = getDocumentStoragePath(userId, key, file.name);
-  const absolutePath = path.join(process.cwd(), storagePath);
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), storagePath);
   const buffer = Buffer.from(await file.arrayBuffer());
 
   await writeFile(absolutePath, buffer);
@@ -51,7 +51,7 @@ async function deleteStoredFile(storagePath) {
     return;
   }
 
-  const absolutePath = path.join(process.cwd(), storagePath.replace(/^\//, ""));
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), storagePath.replace(/^\//, ""));
 
   try {
     await unlink(absolutePath);

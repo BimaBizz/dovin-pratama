@@ -27,7 +27,7 @@ export async function GET(_request, { params }) {
     return new NextResponse("Gambar tidak ditemukan", { status: 404 });
   }
 
-  const absolutePath = path.join(process.cwd(), image.filePath.replace(/^\/+/, ""));
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), image.filePath.replace(/^\/+/, ""));
 
   try {
     const buffer = await readFile(absolutePath);

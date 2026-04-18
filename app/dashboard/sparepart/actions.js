@@ -36,7 +36,7 @@ async function deleteStoredFile(storagePath) {
     return;
   }
 
-  const absolutePath = path.join(process.cwd(), storagePath.replace(/^\/+/, ""));
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), storagePath.replace(/^\/+/, ""));
 
   try {
     await unlink(absolutePath);
@@ -53,7 +53,7 @@ async function saveSparepartImageFile(sparepartId, file) {
 
   const safeName = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}${getFileExtension(file.name)}`;
   const relativePath = path.join("storage", "spareparts", sparepartId, safeName);
-  const absolutePath = path.join(process.cwd(), relativePath);
+  const absolutePath = path.join(/*turbopackIgnore: true*/ process.cwd(), relativePath);
   const buffer = Buffer.from(await file.arrayBuffer());
 
   await writeFile(absolutePath, buffer);
