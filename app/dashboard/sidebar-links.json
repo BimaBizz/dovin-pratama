@@ -3,7 +3,6 @@
     "SUPERUSER": 100,
     "ADMIN": 90,
     "SUPERVISOR": 80,
-    "TEAM_LEADER": 70,
     "LEADER TEKNISI": 70,
     "TEKNISI": 20,
     "ASS TEKNISI": 10,
@@ -108,6 +107,40 @@
       ]
     },
     {
+      "id": "trouble",
+      "type": "group",
+      "label": "Trouble",
+      "icon": "triangle-alert",
+      "links": [
+        {
+          "label": "Unit Trouble",
+          "href": "/dashboard/trouble/unit-trouble",
+          "permission": {
+            "key": "trouble-unit",
+            "viewMinPriority": 10,
+            "crudMinPriority": {
+              "create": 10,
+              "update": 10,
+              "delete": 10
+            }
+          }
+        },
+        {
+          "label": "Setting",
+          "href": "/dashboard/trouble/setting",
+          "permission": {
+            "key": "trouble-setting",
+            "viewMinPriority": 10,
+            "crudMinPriority": {
+              "create": 10,
+              "update": 10,
+              "delete": 10
+            }
+          }
+        }
+      ]
+    },
+    {
       "id": "sparepart",
       "type": "link",
       "label": "Sparepart",
@@ -188,20 +221,34 @@
     },
     {
       "id": "analytics",
-      "type": "placeholder",
+      "type": "link",
       "label": "Analytics",
       "icon": "chart-column-increasing",
+      "href": "/dashboard/analytics",
       "permission": {
-        "crudMinPriority": {}
+        "key": "analytics",
+        "viewMinPriority": 10,
+        "crudMinPriority": {
+          "create": 100,
+          "update": 100,
+          "delete": 100
+        }
       }
     },
     {
       "id": "settings",
-      "type": "placeholder",
+      "type": "link",
       "label": "Settings",
       "icon": "settings",
+      "href": "/dashboard/settings",
       "permission": {
-        "crudMinPriority": {}
+        "key": "settings-profile",
+        "viewMinPriority": 0,
+        "crudMinPriority": {
+          "create": 100,
+          "update": 0,
+          "delete": 100
+        }
       }
     }
   ]

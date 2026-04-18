@@ -1,7 +1,8 @@
 import Link from "next/link";
-import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, ChevronDown, Package, KanbanSquare } from "lucide-react";
+import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, ChevronDown, Package, KanbanSquare, TriangleAlert } from "lucide-react";
 
 import MobileSidebar from "@/app/dashboard/mobile-sidebar";
+import DashboardAutoLogout from "@/app/dashboard/dashboard-auto-logout";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { requireAuthenticatedUser } from "@/lib/auth";
@@ -17,6 +18,7 @@ const iconMap = {
   "package": Package,
   "kanban-square": KanbanSquare,
   "chart-column-increasing": ChartColumnIncreasing,
+  "triangle-alert": TriangleAlert,
 };
 
 export default async function DashboardLayout({ children }) {
@@ -28,6 +30,7 @@ export default async function DashboardLayout({ children }) {
 
   return (
     <main className="min-h-screen bg-zinc-100 md:grid md:grid-cols-[270px_1fr]">
+      <DashboardAutoLogout />
       <aside className="sticky top-0 hidden h-72 border-r border-zinc-200 bg-white md:flex md:min-h-screen md:flex-col">
         <div className="border-b border-zinc-200 gap-3 bg-white py-3 px-6">
           <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Control Panel</p>

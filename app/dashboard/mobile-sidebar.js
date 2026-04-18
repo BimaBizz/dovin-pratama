@@ -15,6 +15,7 @@ import {
   Network,
   Package,
   KanbanSquare,
+  TriangleAlert,
 } from "lucide-react";
 
 import { logoutAction } from "@/app/dashboard/actions";
@@ -29,6 +30,7 @@ const iconMap = {
   "kanban-square": KanbanSquare,
   "chart-column-increasing": ChartColumnIncreasing,
   "check": Check,
+  "triangle-alert": TriangleAlert,
 };
 
 export default function MobileSidebar({ displayName, navItems = [] }) {
