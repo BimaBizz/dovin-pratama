@@ -1,6 +1,7 @@
 import UsersCrudClient from "@/app/dashboard/users/users-crud-client";
 import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { getRolePriority, getRolePriorityMap } from "@/lib/role-priority";
 
 export const metadata = {
   title: "Users",
@@ -26,12 +27,14 @@ function buildSearchFilter(search) {
 }
 
 export default async function UsersPage({ searchParams }) {
-  const { evaluator } = await requirePagePermission("users", "view");
+  const { session, evaluator } = await requirePagePermission("users", "view");
 
   const resolvedSearchParams = await searchParams;
   const search = String(resolvedSearchParams?.search || "").trim();
   const page = Math.max(Number(resolvedSearchParams?.page || 1) || 1, 1);
   const where = buildSearchFilter(search);
+  const rolePriorityMap = await getRolePriorityMap();
+  const viewerPriority = getRolePriority(rolePriorityMap, session.user.role);
 
   const totalUsers = await prisma.user.count({ where });
   const totalPages = Math.max(Math.ceil(totalUsers / PAGE_SIZE), 1);
@@ -72,12 +75,20 @@ export default async function UsersPage({ searchParams }) {
     }),
   ]);
 
-  const roleOptions = roleEntries.map((role) => role.name);
+  const usersWithPriority = users.map((user) => ({
+    ...user,
+    priority: getRolePriority(rolePriorityMap, user.role),
+  }));
+
+  const roleOptions = roleEntries
+    .map((role) => role.name)
+    .filter((roleName) => getRolePriority(rolePriorityMap, roleName) <= viewerPriority);
 
   return (
     <UsersCrudClient
-      users={users}
+      users={usersWithPriority}
       roleOptions={roleOptions}
+      viewerPriority={viewerPriority}
       canCreate={evaluator.canCrud("users", "create")}
       canUpdate={evaluator.canCrud("users", "update")}
       canDelete={evaluator.canCrud("users", "delete")}

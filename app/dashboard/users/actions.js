@@ -8,6 +8,7 @@ import path from "node:path";
 import { getCurrentSession } from "@/lib/auth";
 import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { canAssignRole, getRolePriority, getRolePriorityMap } from "@/lib/role-priority";
 
 const MAX_DOCUMENT_SIZE_BYTES = 2 * 1024 * 1024;
 const UPLOAD_ROOT = path.join(process.cwd(), "storage", "users");
@@ -158,8 +159,30 @@ async function ensureRoleExistsInMaster(role) {
   return { success: true };
 }
 
+async function validateRoleAssignmentPermission(assignerRole, targetRole) {
+  const rolePriorityMap = await getRolePriorityMap();
+
+  if (!canAssignRole(rolePriorityMap, assignerRole, targetRole)) {
+    return { error: "Anda tidak dapat memberi role dengan priority lebih tinggi dari role Anda." };
+  }
+
+  return { success: true };
+}
+
+async function validateUserEditPermission(editorRole, targetRole) {
+  const rolePriorityMap = await getRolePriorityMap();
+  const editorPriority = getRolePriority(rolePriorityMap, editorRole);
+  const targetPriority = getRolePriority(rolePriorityMap, targetRole);
+
+  if (targetPriority > editorPriority) {
+    return { error: "Anda tidak dapat mengedit user dengan priority lebih tinggi dari role Anda." };
+  }
+
+  return { success: true };
+}
+
 export async function createUserAction(formData) {
-  await requirePagePermission("users", "create");
+  const { session } = await requirePagePermission("users", "create");
 
   const fullName = String(formData.get("fullName") || "").trim();
   const birthPlace = String(formData.get("birthPlace") || "").trim();
@@ -190,6 +213,11 @@ export async function createUserAction(formData) {
   const roleCheck = await ensureRoleExistsInMaster(role);
   if (roleCheck.error) {
     return { error: roleCheck.error };
+  }
+
+  const rolePermission = await validateRoleAssignmentPermission(session.user.role, role);
+  if (rolePermission.error) {
+    return { error: rolePermission.error };
   }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -223,7 +251,7 @@ export async function createUserAction(formData) {
 }
 
 export async function updateUserAction(formData) {
-  await requirePagePermission("users", "update");
+  const { session } = await requirePagePermission("users", "update");
 
   const id = String(formData.get("id") || "").trim();
   const fullName = String(formData.get("fullName") || "").trim();
@@ -269,11 +297,21 @@ export async function updateUserAction(formData) {
     where: { userId: id },
   });
 
+  const editPermission = await validateUserEditPermission(session.user.role, user.role);
+  if (editPermission.error) {
+    return { error: editPermission.error };
+  }
+
   if (role !== user.role) {
     const roleCheck = await ensureRoleExistsInMaster(role);
     if (roleCheck.error) {
       return { error: roleCheck.error };
     }
+  }
+
+  const rolePermission = await validateRoleAssignmentPermission(session.user.role, role);
+  if (rolePermission.error) {
+    return { error: rolePermission.error };
   }
 
   const duplicate = await prisma.user.findFirst({

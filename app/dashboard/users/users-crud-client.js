@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useMemo, useState, useTransition } from "react";
 import { PenSquare, Plus, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
@@ -114,6 +114,7 @@ export default function UsersCrudClient({
   initError = "",
   pagination,
   search = "",
+  viewerPriority = 0,
   canCreate = true,
   canUpdate = true,
   canDelete = true,
@@ -122,11 +123,7 @@ export default function UsersCrudClient({
   const [pending, startTransition] = useTransition();
   const [modal, setModal] = useState(null);
   const [message, setMessage] = useState(initError);
-  const [searchValue, setSearchValue] = useState(search);
-
-  useEffect(() => {
-    setSearchValue(search);
-  }, [search]);
+  const [searchValue, setSearchValue] = useState(() => search);
 
   const canSubmitRole = roleOptions.length > 0;
 
@@ -138,12 +135,8 @@ export default function UsersCrudClient({
   }, [modal, users]);
 
   const editRoleOptions = useMemo(() => {
-    if (!selectedUser) {
-      return roleOptions;
-    }
-
-    return roleOptions.includes(selectedUser.role) ? roleOptions : [selectedUser.role, ...roleOptions];
-  }, [roleOptions, selectedUser]);
+    return roleOptions;
+  }, [roleOptions]);
 
   const startNumber = pagination ? (pagination.currentPage - 1) * pagination.pageSize + 1 : 1;
 
@@ -235,9 +228,21 @@ export default function UsersCrudClient({
                   <td className="px-2 py-3">
                     <div className="flex justify-end gap-2">
                       {canUpdate ? (
-                        <Button size="sm" variant="outline" type="button" onClick={() => setModal({ type: "edit", userId: user.id })}>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            type="button"
+                            disabled={user.priority > viewerPriority}
+                            onClick={() => {
+                              if (user.priority > viewerPriority) {
+                                return;
+                              }
+
+                              setModal({ type: "edit", userId: user.id });
+                            }}
+                          >
                           <PenSquare />
-                          Edit
+                            {user.priority > viewerPriority ? "Tidak Bisa Diedit" : "Edit"}
                         </Button>
                       ) : null}
                       {canDelete ? (
