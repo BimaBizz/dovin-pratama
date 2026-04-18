@@ -53,7 +53,7 @@ export default function MobileSidebar({ displayName, navItems = [] }) {
       </Button>
 
       {open ? (
-        <div className="fixed inset-0 z-50 flex">
+        <div className="fixed min-h-screen inset-0 z-50 flex">
           <button
             type="button"
             className="h-full flex-1 bg-zinc-950/50"
@@ -61,18 +61,18 @@ export default function MobileSidebar({ displayName, navItems = [] }) {
             onClick={() => setOpen(false)}
           />
 
-          <aside className="absolute left-0 top-0 h-full w-72 border-l border-zinc-200 bg-white shadow-xl">
-            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-4">
+          <aside className="absolute left-0 top-0 h-72 min-h-screen w-72 border-l border-zinc-200 bg-white shadow-xl">
+            <div className="flex items-center justify-between border-b border-zinc-200 px-4 py-6">
               <div>
                 <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Control Panel</p>
-                <h2 className="mt-1 text-base font-semibold text-zinc-900">Dovin Dashboard</h2>
+                <h2 className="mt-2 text-base font-semibold text-zinc-900">Dovin Dashboard</h2>
               </div>
               <Button type="button" variant="ghost" size="icon" onClick={() => setOpen(false)}>
                 <X className="h-5 w-5" />
               </Button>
             </div>
 
-            <nav className="space-y-1 p-3 text-sm">
+            <nav className="space-y-1 p-3 text-sm h-f">
               {navItems.map((item) => {
                 const ItemIcon = iconMap[item.icon] || Settings;
 
@@ -137,7 +137,7 @@ export default function MobileSidebar({ displayName, navItems = [] }) {
               })}
             </nav>
 
-            <div className="mt-4 border-t border-zinc-200 p-4">
+            <div className="mt-auto border-t border-zinc-200 p-4">
               <div className="mb-3 rounded-md bg-zinc-100 p-3">
                 <p className="text-xs text-zinc-500">Signed in as</p>
                 <p className="truncate text-sm font-medium text-zinc-800">{displayName}</p>

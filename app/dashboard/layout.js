@@ -27,10 +27,10 @@ export default async function DashboardLayout({ children }) {
 
   return (
     <main className="min-h-screen bg-zinc-100 md:grid md:grid-cols-[270px_1fr]">
-      <aside className="hidden border-r border-zinc-200 bg-white md:flex md:min-h-screen md:flex-col">
-        <div className="border-b border-zinc-200 px-5 py-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.16em] text-zinc-500">Control Panel</p>
-          <h2 className="mt-1 text-lg font-semibold text-zinc-900">Dovin Dashboard</h2>
+      <aside className="sticky top-0 hidden h-72 border-r border-zinc-200 bg-white md:flex md:min-h-screen md:flex-col">
+        <div className="border-b border-zinc-200 gap-3 bg-white py-3 px-6">
+          <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Control Panel</p>
+          <h2 className="text-lg font-semibold text-zinc-900">Dovin Dashboard</h2>
         </div>
 
         <nav className="flex-1 space-y-1 p-3 text-sm">
@@ -98,7 +98,7 @@ export default async function DashboardLayout({ children }) {
       </aside>
 
       <section className="flex min-h-screen flex-col">
-        <header className="border-b border-zinc-200 bg-white px-4 py-3 md:px-8">
+        <header className="sticky top-0 border-b border-zinc-200 bg-white px-4 py-3 md:px-8">
           <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <MobileSidebar displayName={displayName} navItems={sidebarLinks} />

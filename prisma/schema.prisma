@@ -75,6 +75,7 @@ model TeamScheduleAssignment {
   shiftCode String
   team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  attendanceRecord AttendanceRecord?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -151,18 +152,20 @@ model UserDocument {
 }
 
 model AttendanceRecord {
-  id           String   @id @default(uuid())
-  userId       String
-  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  attendedAt   DateTime @default(now())
-  latitude     Float
-  longitude    Float
-  accuracy     Float?
-  locationLabel String?
-  photoPath    String?
-  photoMimeType String?
-  photoExpiresAt DateTime?
-  createdAt    DateTime @default(now())
+  id                   String                @id @default(uuid())
+  userId               String
+  scheduleAssignmentId  String?               @unique
+  user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  scheduleAssignment    TeamScheduleAssignment? @relation(fields: [scheduleAssignmentId], references: [id], onDelete: Cascade)
+  attendedAt           DateTime              @default(now())
+  latitude             Float
+  longitude            Float
+  accuracy             Float?
+  locationLabel        String?
+  photoPath            String?
+  photoMimeType        String?
+  photoExpiresAt       DateTime?
+  createdAt            DateTime              @default(now())
 
   @@index([userId])
   @@index([attendedAt])
@@ -170,6 +173,15 @@ model AttendanceRecord {
 }
 
 model AccessControlConfig {
+  id              String   @id @default(uuid())
+  singletonKey    String   @unique @default("GLOBAL")
+  config          Json
+  updatedByUserId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model AttendanceSetting {
   id              String   @id @default(uuid())
   singletonKey    String   @unique @default("GLOBAL")
   config          Json

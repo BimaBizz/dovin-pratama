@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 
 import { getCurrentSession } from "@/lib/auth";
 import { cleanupExpiredAttendancePhotos, saveAttendancePhoto } from "@/lib/attendance-storage";
+import { getTodaysScheduledAttendanceForUser } from "@/lib/attendance-schedule";
 import { prisma } from "@/lib/prisma";
 
 function parseNumber(value) {
@@ -36,6 +37,21 @@ export async function POST(request) {
     return new NextResponse("Lokasi absensi tidak valid.", { status: 400 });
   }
 
+  const scheduledAttendance = await getTodaysScheduledAttendanceForUser(session.user.id);
+  if (scheduledAttendance.error) {
+    return new NextResponse(scheduledAttendance.error, { status: 400 });
+  }
+
+  if (!scheduledAttendance.allowed) {
+    return new NextResponse(scheduledAttendance.message || "Absensi belum dapat dilakukan pada waktu ini.", {
+      status: 400,
+    });
+  }
+
+  if (scheduledAttendance.alreadyAttended) {
+    return new NextResponse("Absensi untuk jadwal ini sudah pernah dilakukan.", { status: 400 });
+  }
+
   let photoPayload = {
     photoPath: null,
     photoMimeType: null,
@@ -55,10 +71,12 @@ export async function POST(request) {
   const attendance = await prisma.attendanceRecord.create({
     data: {
       userId: session.user.id,
+      scheduleAssignmentId: scheduledAttendance.assignment.id,
       latitude,
       longitude,
       accuracy: accuracy === null ? null : accuracy,
       locationLabel: locationLabel || null,
+      attendedAt: new Date(),
       ...photoPayload,
     },
     select: {

@@ -50,10 +50,10 @@
           "href": "/dashboard/roles",
           "permission": {
             "key": "roles",
-            "viewMinPriority": 100,
+            "viewMinPriority": 90,
             "crudMinPriority": {
-              "create": 100,
-              "update": 100,
+              "create": 90,
+              "update": 90,
               "delete": 100
             }
           }
@@ -125,31 +125,68 @@
     },
     {
       "id": "attendance",
-      "type": "link",
+      "type": "group",
       "label": "Absensi",
       "icon": "check",
-      "href": "/dashboard/absensi",
-      "permission": {
-        "key": "attendance",
-        "viewMinPriority": 10,
-        "crudMinPriority": {
-          "create": 10,
-          "update": 10,
-          "delete": 80
+      "links": [
+        {
+          "label": "Absensi Anggota",
+          "href": "/dashboard/absensi",
+          "permission": {
+            "key": "attendance",
+            "viewMinPriority": 10,
+            "crudMinPriority": {
+              "create": 10,
+              "update": 10,
+              "delete": 80
+            }
+          }
+        },
+        {
+          "label": "Rekap Absensi",
+          "href": "/dashboard/absensi/rekap",
+          "permission": {
+            "key": "attendance-recap",
+            "viewMinPriority": 80,
+            "crudMinPriority": {
+              "create": 100,
+              "update": 100,
+              "delete": 100
+            }
+          }
+        },
+        {
+          "label": "Pengaturan Absensi",
+          "href": "/dashboard/absensi/pengaturan",
+          "permission": {
+            "key": "attendance-settings",
+            "viewMinPriority": 100,
+            "crudMinPriority": {
+              "create": 100,
+              "update": 100,
+              "delete": 100
+            }
+          }
         }
-      }
+      ]
     },
     {
       "id": "analytics",
       "type": "placeholder",
       "label": "Analytics",
-      "icon": "chart-column-increasing"
+      "icon": "chart-column-increasing",
+      "permission": {
+        "crudMinPriority": {}
+      }
     },
     {
       "id": "settings",
       "type": "placeholder",
       "label": "Settings",
-      "icon": "settings"
+      "icon": "settings",
+      "permission": {
+        "crudMinPriority": {}
+      }
     }
   ]
 }

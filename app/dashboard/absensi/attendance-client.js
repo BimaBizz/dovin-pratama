@@ -23,7 +23,7 @@ function getGoogleMapsUrl(latitude, longitude) {
   return `https://www.google.com/maps?q=${latitude},${longitude}`;
 }
 
-export default function AttendanceClient({ history = [], userName = "Pengguna", initError = "" }) {
+export default function AttendanceClient({ history = [], userName = "Pengguna", initError = "", scheduleContext = null }) {
   const videoRef = useRef(null);
   const streamRef = useRef(null);
   const [pending, startTransition] = useTransition();
@@ -38,11 +38,34 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     longitude: null,
     accuracy: null,
   });
+  const [nowTick, setNowTick] = useState(Date.now());
 
   const hasLocation = useMemo(
     () => typeof location.latitude === "number" && typeof location.longitude === "number",
     [location]
   );
+
+  const canSubmitAttendance = Boolean(scheduleContext?.allowed) && !scheduleContext?.alreadyAttended;
+
+  const countdownLabel = useMemo(() => {
+    if (!scheduleContext?.windowStartIso) {
+      return "";
+    }
+
+    const target = new Date(scheduleContext.windowStartIso).getTime();
+    const diffMs = target - nowTick;
+
+    if (Number.isNaN(target) || diffMs <= 0) {
+      return "Window absensi sudah dibuka.";
+    }
+
+    const totalSeconds = Math.floor(diffMs / 1000);
+    const hours = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+    const minutes = String(Math.floor((totalSeconds % 3600) / 60)).padStart(2, "0");
+    const seconds = String(totalSeconds % 60).padStart(2, "0");
+
+    return `Countdown buka absensi: ${hours}:${minutes}:${seconds}`;
+  }, [nowTick, scheduleContext]);
 
   async function startCamera() {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
@@ -174,6 +197,11 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
       return;
     }
 
+    if (!canSubmitAttendance) {
+      setMessage(scheduleContext?.message || "Absensi belum dapat dilakukan pada waktu ini.");
+      return;
+    }
+
     startTransition(async () => {
       setMessage("");
 
@@ -209,6 +237,18 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
       clearPhotoPreview();
     };
   }, []);
+
+  useEffect(() => {
+    if (!scheduleContext?.windowStartIso) {
+      return undefined;
+    }
+
+    const interval = window.setInterval(() => {
+      setNowTick(Date.now());
+    }, 1000);
+
+    return () => window.clearInterval(interval);
+  }, [scheduleContext?.windowStartIso]);
 
   return (
     <div className="space-y-4">
@@ -260,13 +300,30 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                   <LocateFixed />
                   Ambil Lokasi
                 </Button>
-                <Button type="button" onClick={submitAttendance} disabled={pending}>
+                <Button type="button" onClick={submitAttendance} disabled={pending || !canSubmitAttendance}>
                   <Send />
                   {pending ? "Menyimpan..." : "Kirim Absensi"}
                 </Button>
               </div>
             </div>
           </div>
+
+          {scheduleContext ? (
+            <div className={`rounded-md border p-3 text-sm ${scheduleContext.allowed ? "border-emerald-200 bg-emerald-50 text-emerald-900" : "border-amber-200 bg-amber-50 text-amber-900"}`}>
+              <p className="font-semibold">Jadwal Hari Ini</p>
+              {scheduleContext.error ? (
+                <p>{scheduleContext.error}</p>
+              ) : (
+                <div className="mt-1 space-y-1">
+                  <p>Tim: {scheduleContext.team?.name || "-"}</p>
+                  <p>Shift: {scheduleContext.assignment?.shiftCode || "-"}</p>
+                  <p>Window: {scheduleContext.message || "-"}</p>
+                  {scheduleContext.alreadyAttended ? <p>Absensi untuk jadwal ini sudah dilakukan.</p> : null}
+                  {!scheduleContext.allowed ? <p>{countdownLabel}</p> : null}
+                </div>
+              )}
+            </div>
+          ) : null}
 
           {message ? <p className="text-sm text-zinc-700">{message}</p> : null}
         </CardContent>

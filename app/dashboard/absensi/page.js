@@ -1,5 +1,6 @@
 import AttendanceClient from "@/app/dashboard/absensi/attendance-client";
 import { cleanupExpiredAttendancePhotos } from "@/lib/attendance-storage";
+import { getTodaysScheduledAttendanceForUser } from "@/lib/attendance-schedule";
 import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
@@ -34,6 +35,8 @@ export default async function AbsensiAnggotaPage() {
 
   await cleanupExpiredAttendancePhotos();
 
+  const scheduleContext = await getTodaysScheduledAttendanceForUser(session.user.id);
+
   const records = await prisma.attendanceRecord.findMany({
     where: {
       userId: session.user.id,
@@ -65,5 +68,11 @@ export default async function AbsensiAnggotaPage() {
     photoExpiresAt: record.photoExpiresAt ? toDateTimeString(record.photoExpiresAt) : null,
   }));
 
-  return <AttendanceClient history={history} userName={session.user.fullName || session.user.email} />;
+  return (
+    <AttendanceClient
+      history={history}
+      userName={session.user.fullName || session.user.email}
+      scheduleContext={scheduleContext}
+    />
+  );
 }
