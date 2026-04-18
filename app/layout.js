@@ -17,12 +17,32 @@ export const metadata = {
 };
 
 export default function RootLayout({ children }) {
+
+  const developmentMode = String(process.env.DEVELOPMENT_MODE || "true").trim().toLowerCase() !== "false";
+  if (developmentMode) {
+    return (
+      <html
+        lang="en"
+        className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      >
+        <body className="min-h-full flex flex-col">
+          <span className="fixed -right-32 top-10 z-50 bg-red-500 h-fit w-96 p-4 items-center text-sm text-white font-bold flex justify-center rotate-45">
+            DEVELOPMENT MODE
+          </span>
+            {children}
+        </body>
+      </html>
+    );
+  } 
+
   return (
     <html
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col">
+        {children}
+      </body>
     </html>
   );
 }
