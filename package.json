@@ -6,10 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
+    "start:hosting": "NODE_ENV=production node server.js",
     "lint": "eslint",
     "prisma:generate": "prisma generate",
     "prisma:push": "prisma db push",
-    "prisma:seed": "node prisma/seed.js"
+    "prisma:seed": "node prisma/seed.js",
+    "prisma:all": "npm run prisma:generate && npm run prisma:push && npm run prisma:seed"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",

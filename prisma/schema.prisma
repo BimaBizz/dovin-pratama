@@ -115,6 +115,30 @@ model SparepartImage {
   @@index([sortOrder])
 }
 
+model TroubleUnit {
+  id        String          @id @default(uuid())
+  name      String          @unique
+  records   TroubleRecord[]
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+}
+
+model TroubleRecord {
+  id              String       @id @default(uuid())
+  unitId          String
+  troubleDate     DateTime     @db.Date
+  timeOff         String
+  timeOn          String
+  durationMinutes Int
+  note            String?
+  unit            TroubleUnit  @relation(fields: [unitId], references: [id], onDelete: Restrict)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+
+  @@index([unitId])
+  @@index([troubleDate])
+}
+
 model Session {
   id        String   @id @default(uuid())
   tokenHash String   @unique
