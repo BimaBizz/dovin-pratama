@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 function Modal({ title, description, onClose, children }) {
   return (
@@ -295,7 +296,17 @@ export default function TeamManagementClient({
                   <td className="px-2 py-3 text-zinc-700">{getUserDisplayName(team.leader)}</td>
                   <td className="px-2 py-3 text-zinc-700">{team.members.length}</td>
                   <td className="px-2 py-3 text-zinc-700">
-                    {team.members.length > 0 ? team.members.map((member) => getUserDisplayName(member.user)).join(", ") : "-"}
+                    {team.members.length > 0 ? (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {team.members.map((member) => (
+                          <Badge key={member.userId} variant="primary" className="text-xs">
+                            {getUserDisplayName(member.user)}
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="ml-2">-</span>
+                    )}
                   </td>
                   <td className="px-2 py-3">
                     <div className="flex justify-end gap-2">
