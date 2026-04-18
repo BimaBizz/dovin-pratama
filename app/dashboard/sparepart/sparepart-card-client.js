@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { PenSquare, Plus, Trash2 } from "lucide-react";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
 import { createSparepartAction, deleteSparepartAction, updateSparepartAction } from "@/app/dashboard/sparepart/actions";
@@ -28,6 +28,21 @@ function Modal({ title, description, onClose, children }) {
       </div>
     </div>
   );
+}
+
+function buildPageHref(search, page) {
+  const params = new URLSearchParams();
+
+  if (search) {
+    params.set("search", search);
+  }
+
+  if (page > 1) {
+    params.set("page", String(page));
+  }
+
+  const query = params.toString();
+  return query ? `?${query}` : "?";
 }
 
 function SparepartFormFields({ mode, sparepart }) {
@@ -75,6 +90,8 @@ function SparepartFormFields({ mode, sparepart }) {
 export default function SparepartCardClient({
   spareparts = [],
   initError = "",
+  pagination,
+  search = "",
   canCreate = true,
   canUpdate = true,
   canDelete = true,
@@ -84,6 +101,11 @@ export default function SparepartCardClient({
   const [modal, setModal] = useState(null);
   const [message, setMessage] = useState(initError);
   const [removedImageIds, setRemovedImageIds] = useState([]);
+  const [searchValue, setSearchValue] = useState(search);
+
+  useEffect(() => {
+    setSearchValue(search);
+  }, [search]);
 
   const selectedSparepart = useMemo(() => {
     if (!modal?.sparepartId) {
@@ -92,6 +114,8 @@ export default function SparepartCardClient({
 
     return spareparts.find((item) => item.id === modal.sparepartId) || null;
   }, [modal, spareparts]);
+
+  const startNumber = pagination ? (pagination.currentPage - 1) * pagination.pageSize + 1 : 1;
 
   function closeModal() {
     setModal(null);
@@ -123,6 +147,11 @@ export default function SparepartCardClient({
     });
   }
 
+  function handleSearchSubmit(event) {
+    event.preventDefault();
+    router.push(buildPageHref(searchValue.trim(), 1));
+  }
+
   return (
     <div className="space-y-4">
       <Card>
@@ -139,6 +168,18 @@ export default function SparepartCardClient({
           ) : null}
         </CardHeader>
         <CardContent>
+          <form className="mb-4 flex flex-col gap-3 sm:flex-row" onSubmit={handleSearchSubmit}>
+            <Input
+              value={searchValue}
+              onChange={(event) => setSearchValue(event.target.value)}
+              placeholder="Cari nama, lokasi, atau deskripsi..."
+              className="sm:max-w-sm"
+            />
+            <Button type="submit" variant="outline">
+              Filter
+            </Button>
+          </form>
+
           <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
             {spareparts.map((sparepart) => (
               <article key={sparepart.id} className="overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-sm transition hover:shadow-md">
@@ -186,6 +227,36 @@ export default function SparepartCardClient({
           </div>
 
           {spareparts.length === 0 ? <p className="text-sm text-zinc-500">Belum ada data sparepart.</p> : null}
+
+          {pagination ? (
+            <div className="mt-4 flex flex-col gap-3 border-t border-zinc-200 pt-4 sm:flex-row sm:items-center sm:justify-between">
+              <p className="text-sm text-zinc-600">
+                Menampilkan {spareparts.length === 0 ? 0 : startNumber} - {startNumber + spareparts.length - 1} dari {pagination.totalSpareparts} data
+              </p>
+              <div className="flex items-center gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pagination.currentPage <= 1}
+                  onClick={() => router.push(buildPageHref(searchValue.trim(), Math.max(pagination.currentPage - 1, 1)))}
+                >
+                  Sebelumnya
+                </Button>
+                <span className="text-sm text-zinc-600">
+                  Halaman {pagination.currentPage} dari {pagination.totalPages}
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  disabled={pagination.currentPage >= pagination.totalPages}
+                  onClick={() => router.push(buildPageHref(searchValue.trim(), pagination.currentPage + 1))}
+                >
+                  Berikutnya
+                </Button>
+              </div>
+            </div>
+          ) : null}
+
           {message ? <p className="mt-3 text-sm text-red-600">{message}</p> : null}
         </CardContent>
       </Card>

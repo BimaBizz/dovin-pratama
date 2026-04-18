@@ -12,8 +12,10 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata = {
-  title: "Auth Dashboard",
-  description: "Login superuser dengan Prisma + MySQL",
+  title: {
+    template: 'Dovin Pratama | %s',
+  },
+  description: "Dashboard operasional internal PT. Dovin Pratama. Akses terbatas untuk pengguna terdaftar sesuai peran dan izin yang diberikan.",
 };
 
 export default function RootLayout({ children }) {

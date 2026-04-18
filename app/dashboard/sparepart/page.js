@@ -7,17 +7,57 @@ export const metadata = {
   description: "CRUD data sparepart dalam tampilan card",
 };
 
-export default async function SparepartPage() {
-  const { evaluator } = await requirePagePermission("sparepart", "view");
+const PAGE_SIZE = 6;
 
-  if (!prisma.sparepart?.findMany) {
-    return <SparepartCardClient spareparts={[]} initError="Model sparepart belum siap. Jalankan: npm run prisma:generate && npm run prisma:push" />;
+function buildSearchFilter(search) {
+  if (!search) {
+    return {};
   }
 
+  return {
+    OR: [
+      { name: { contains: search } },
+      { location: { contains: search } },
+      { description: { contains: search } },
+    ],
+  };
+}
+
+export default async function SparepartPage({ searchParams }) {
+  const { evaluator } = await requirePagePermission("sparepart", "view");
+
+  const resolvedSearchParams = await searchParams;
+  const search = String(resolvedSearchParams?.search || "").trim();
+  const page = Math.max(Number(resolvedSearchParams?.page || 1) || 1, 1);
+  const where = buildSearchFilter(search);
+
+  if (!prisma.sparepart?.findMany) {
+    return (
+      <SparepartCardClient
+        spareparts={[]}
+        search={search}
+        pagination={{
+          currentPage: 1,
+          totalPages: 1,
+          totalSpareparts: 0,
+          pageSize: PAGE_SIZE,
+        }}
+        initError="Model sparepart belum siap. Jalankan: npm run prisma:generate && npm run prisma:push"
+      />
+    );
+  }
+
+  const totalSpareparts = await prisma.sparepart.count({ where });
+  const totalPages = Math.max(Math.ceil(totalSpareparts / PAGE_SIZE), 1);
+  const currentPage = Math.min(page, totalPages);
+
   const spareparts = await prisma.sparepart.findMany({
+    where,
     orderBy: {
       createdAt: "desc",
     },
+    skip: (currentPage - 1) * PAGE_SIZE,
+    take: PAGE_SIZE,
     select: {
       id: true,
       name: true,
@@ -48,6 +88,13 @@ export default async function SparepartPage() {
   return (
     <SparepartCardClient
       spareparts={normalizedSpareparts}
+      search={search}
+      pagination={{
+        currentPage,
+        totalPages,
+        totalSpareparts,
+        pageSize: PAGE_SIZE,
+      }}
       canCreate={evaluator.canCrud("sparepart", "create")}
       canUpdate={evaluator.canCrud("sparepart", "update")}
       canDelete={evaluator.canCrud("sparepart", "delete")}

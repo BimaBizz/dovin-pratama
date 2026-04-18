@@ -26,14 +26,14 @@ export default async function LoginPage() {
           <Badge variant="secondary" className="bg-zinc-100 text-zinc-900">
             Dashboard Access
           </Badge>
-          <h1 className="mt-6 max-w-md text-4xl font-bold tracking-tight">Secure Admin Portal</h1>
+          <h1 className="mt-6 max-w-md text-4xl font-bold tracking-tight">PT. DOVIN PRATAMA</h1>
           <p className="mt-4 max-w-md text-sm text-zinc-300">
             Masuk menggunakan akun yang terdaftar untuk mengakses dashboard operasional.
           </p>
         </div>
         <div className="relative z-10 flex items-center gap-3 text-sm text-zinc-300">
           <ShieldCheck className="h-4 w-4" />
-          Proteksi sesi berbasis server dan database.
+          Proteksi dan keamanan data
         </div>
       </section>
 
