@@ -3,6 +3,7 @@ import { cleanupExpiredAttendancePhotos } from "@/lib/attendance-storage";
 import { getTodaysScheduledAttendanceForUser } from "@/lib/attendance-schedule";
 import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
+import { getAttendanceStatusLabel } from "@/lib/attendance-status";
 
 export const metadata = {
   title: "Absensi Anggota",
@@ -48,9 +49,11 @@ export default async function AbsensiAnggotaPage() {
     select: {
       id: true,
       attendedAt: true,
+      status: true,
       latitude: true,
       longitude: true,
       accuracy: true,
+      note: true,
       locationLabel: true,
       photoPath: true,
       photoExpiresAt: true,
@@ -63,6 +66,8 @@ export default async function AbsensiAnggotaPage() {
     latitude: record.latitude,
     longitude: record.longitude,
     accuracy: record.accuracy,
+    statusLabel: getAttendanceStatusLabel(record.status),
+    note: record.note,
     locationLabel: record.locationLabel,
     photoUrl: record.photoPath ? `/api/dashboard/attendance/${record.id}/photo` : null,
     photoExpiresAt: record.photoExpiresAt ? toDateTimeString(record.photoExpiresAt) : null,

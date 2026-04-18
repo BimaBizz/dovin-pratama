@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { getAttendanceStatusLabel } from "@/lib/attendance-status";
 import { requirePagePermission } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
@@ -42,6 +43,14 @@ function buildUserDisplayName(user) {
 
 function getStatusBadge(attendanceRecord) {
   if (attendanceRecord) {
+    if (attendanceRecord.status === "SICK") {
+      return <Badge variant="secondary">Sakit</Badge>;
+    }
+
+    if (attendanceRecord.status === "LEAVE") {
+      return <Badge variant="outline">Cuti</Badge>;
+    }
+
     return <Badge>Hadir</Badge>;
   }
 
@@ -134,6 +143,8 @@ export default async function AttendanceRecapPage({ searchParams }) {
             select: {
               id: true,
               attendedAt: true,
+                  status: true,
+                  note: true,
               latitude: true,
               longitude: true,
               accuracy: true,
@@ -250,15 +261,18 @@ export default async function AttendanceRecapPage({ searchParams }) {
       ) : (
         shiftOrder.map((shiftCode) => {
           const rows = groupedByShift[shiftCode] || [];
-          const hadirRows = rows.filter((row) => row.attendanceRecord);
           const belumRows = rows.filter((row) => !row.attendanceRecord);
+          const sickRows = rows.filter((row) => row.attendanceRecord?.status === "SICK");
+          const leaveRows = rows.filter((row) => row.attendanceRecord?.status === "LEAVE");
+          const presentRows = rows.filter((row) => row.attendanceRecord?.status === "PRESENT");
+          const attendanceRows = rows.filter((row) => row.attendanceRecord);
 
           return (
             <Card key={shiftCode}>
               <CardHeader>
                 <CardTitle>Shift {shiftCode}</CardTitle>
                 <CardDescription>
-                  Hadir {hadirRows.length} · Belum Absen {belumRows.length}
+                  Hadir {presentRows.length} · Sakit {sickRows.length} · Cuti {leaveRows.length} · Belum Absen {belumRows.length}
                 </CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
@@ -281,9 +295,13 @@ export default async function AttendanceRecapPage({ searchParams }) {
                           <td className="px-2 py-3">{getStatusBadge(row.attendanceRecord)}</td>
                           <td className="px-2 py-3 text-zinc-700">{row.attendanceRecord?.attendedAt ? new Date(row.attendanceRecord.attendedAt).toLocaleString("id-ID") : "-"}</td>
                           <td className="px-2 py-3 text-zinc-700">
-                            <Link href={row.attendanceRecord?.latitude && row.attendanceRecord?.longitude ? `https://www.google.com/maps?q=${row.attendanceRecord.latitude},${row.attendanceRecord.longitude}` : "#"} target="_blank" rel="noopener noreferrer" className="underline">
-                              {row.attendanceRecord?.locationLabel || "-"}
-                            </Link>
+                            {row.attendanceRecord?.latitude && row.attendanceRecord?.longitude ? (
+                              <Link href={`https://www.google.com/maps?q=${row.attendanceRecord.latitude},${row.attendanceRecord.longitude}`} target="_blank" rel="noopener noreferrer" className="underline">
+                                {row.attendanceRecord?.locationLabel || "-"}
+                              </Link>
+                            ) : (
+                              <span>-</span>
+                            )}
                           </td>
                         </tr>
                       ))}
@@ -294,12 +312,14 @@ export default async function AttendanceRecapPage({ searchParams }) {
                 <div className="grid gap-3 md:grid-cols-2">
                   <div className="rounded-md border border-emerald-200 bg-emerald-50 p-4">
                     <p className="text-sm font-semibold text-emerald-900">Sudah Absen</p>
-                    {hadirRows.length === 0 ? (
+                    {attendanceRows.length === 0 ? (
                       <p className="mt-2 text-sm text-emerald-800">Tidak ada data hadir.</p>
                     ) : (
                       <ul className="mt-2 space-y-1 text-sm text-emerald-800">
-                        {hadirRows.map((row) => (
-                          <li key={`${row.id}-hadir`}>{buildUserDisplayName(row.user)}</li>
+                        {attendanceRows.map((row) => (
+                          <li key={`${row.id}-hadir`}>
+                            {buildUserDisplayName(row.user)} · {getAttendanceStatusLabel(row.attendanceRecord.status)}
+                          </li>
                         ))}
                       </ul>
                     )}
@@ -312,6 +332,33 @@ export default async function AttendanceRecapPage({ searchParams }) {
                       <ul className="mt-2 space-y-1 text-sm text-amber-800">
                         {belumRows.map((row) => (
                           <li key={`${row.id}-belum`}>{buildUserDisplayName(row.user)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid gap-3 md:grid-cols-2">
+                  <div className="rounded-md border border-sky-200 bg-sky-50 p-4">
+                    <p className="text-sm font-semibold text-sky-900">Izin Sakit</p>
+                    {sickRows.length === 0 ? (
+                      <p className="mt-2 text-sm text-sky-800">Tidak ada data sakit.</p>
+                    ) : (
+                      <ul className="mt-2 space-y-1 text-sm text-sky-800">
+                        {sickRows.map((row) => (
+                          <li key={`${row.id}-sick`}>{buildUserDisplayName(row.user)}</li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                  <div className="rounded-md border border-violet-200 bg-violet-50 p-4">
+                    <p className="text-sm font-semibold text-violet-900">Izin Cuti</p>
+                    {leaveRows.length === 0 ? (
+                      <p className="mt-2 text-sm text-violet-800">Tidak ada data cuti.</p>
+                    ) : (
+                      <ul className="mt-2 space-y-1 text-sm text-violet-800">
+                        {leaveRows.map((row) => (
+                          <li key={`${row.id}-leave`}>{buildUserDisplayName(row.user)}</li>
                         ))}
                       </ul>
                     )}

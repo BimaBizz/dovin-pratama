@@ -6,6 +6,7 @@ const prisma = new PrismaClient();
 const defaultPassword = "Password123!";
 
 const superuserEmail = (process.env.SUPERUSER_EMAIL || "").trim().toLowerCase();
+const developmentMode = String(process.env.DEVELOPMENT_MODE || "true").trim().toLowerCase() !== "false";
 
 function makeProfile(fullName, birthPlace, birthDate, address) {
   return {
@@ -113,38 +114,42 @@ async function main() {
     },
   });
 
-  for (const user of dummyUserSeeds) {
-    const email = user.email.trim().toLowerCase();
+  if (developmentMode) {
+    for (const user of dummyUserSeeds) {
+      const email = user.email.trim().toLowerCase();
 
-    await prisma.user.upsert({
-      where: { email },
-      update: {
-        fullName: user.fullName,
-        birthPlace: user.birthPlace,
-        birthDate: user.birthDate,
-        address: user.address,
-        passwordHash: hashedPassword,
-        role: user.role,
-      },
-      create: {
-        email,
-        fullName: user.fullName,
-        birthPlace: user.birthPlace,
-        birthDate: user.birthDate,
-        address: user.address,
-        passwordHash: hashedPassword,
-        role: user.role,
-      },
-    });
+      await prisma.user.upsert({
+        where: { email },
+        update: {
+          fullName: user.fullName,
+          birthPlace: user.birthPlace,
+          birthDate: user.birthDate,
+          address: user.address,
+          passwordHash: hashedPassword,
+          role: user.role,
+        },
+        create: {
+          email,
+          fullName: user.fullName,
+          birthPlace: user.birthPlace,
+          birthDate: user.birthDate,
+          address: user.address,
+          passwordHash: hashedPassword,
+          role: user.role,
+        },
+      });
+    }
   }
 
-  console.log("Seed dummy user selesai:");
+  console.log(`Seed user selesai (${developmentMode ? "development" : "production"} mode):`);
   console.log(`- 1 SUPERUSER (${superuserEmail})`);
-  console.log("- 1 SUPERVISOR");
-  console.log("- 1 ADMIN");
-  console.log("- 9 TEKNISI");
-  console.log("- 3 LEADER TEKNISI");
-  console.log("- 28 ASS TEKNISI");
+  if (developmentMode) {
+    console.log("- 1 SUPERVISOR");
+    console.log("- 1 ADMIN");
+    console.log("- 9 TEKNISI");
+    console.log("- 3 LEADER TEKNISI");
+    console.log("- 28 ASS TEKNISI");
+  }
   console.log(`- password default: ${process.env.SUPERUSER_PASSWORD || defaultPassword}`);
 }
 

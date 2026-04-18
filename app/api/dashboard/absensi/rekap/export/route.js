@@ -3,6 +3,7 @@ import ExcelJS from "exceljs";
 import { PDFDocument, StandardFonts, rgb } from "pdf-lib";
 
 import { getCurrentSession } from "@/lib/auth";
+import { ATTENDANCE_STATUS } from "@/lib/attendance-status";
 import { getPermissionEvaluator } from "@/lib/permissions";
 import { prisma } from "@/lib/prisma";
 
@@ -101,6 +102,14 @@ function resolveAttendanceMark({ shiftCode, attendanceRecord, dayDateKey, todayD
   }
 
   if (attendanceRecord) {
+    if (attendanceRecord.status === ATTENDANCE_STATUS.SICK) {
+      return "S";
+    }
+
+    if (attendanceRecord.status === ATTENDANCE_STATUS.LEAVE) {
+      return "C";
+    }
+
     return "✓";
   }
 
@@ -190,6 +199,7 @@ async function loadRecapExportData({ month, teamId, shiftFilter }) {
       attendanceRecord: {
         select: {
           id: true,
+          status: true,
         },
       },
     },

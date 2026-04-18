@@ -6,6 +6,8 @@ import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { ATTENDANCE_STATUS, ATTENDANCE_STATUS_OPTIONS } from "@/lib/attendance-status";
 
 function formatCoordinate(value) {
   if (typeof value !== "number" || Number.isNaN(value)) {
@@ -33,6 +35,8 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
   const [startingCamera, setStartingCamera] = useState(false);
   const [photoBlob, setPhotoBlob] = useState(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
+  const [attendanceStatus, setAttendanceStatus] = useState(ATTENDANCE_STATUS.PRESENT);
+  const [attendanceNote, setAttendanceNote] = useState("");
   const [location, setLocation] = useState({
     latitude: null,
     longitude: null,
@@ -45,7 +49,8 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     [location]
   );
 
-  const canSubmitAttendance = Boolean(scheduleContext?.allowed) && !scheduleContext?.alreadyAttended;
+  const isPresentMode = attendanceStatus === ATTENDANCE_STATUS.PRESENT;
+  const canSubmitAttendance = Boolean(scheduleContext?.assignment) && !scheduleContext?.alreadyAttended;
 
   const countdownLabel = useMemo(() => {
     if (!scheduleContext?.windowStartIso) {
@@ -187,18 +192,23 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
   }
 
   function submitAttendance() {
-    if (!photoBlob) {
-      setMessage("Ambil foto dulu sebelum kirim absensi.");
-      return;
-    }
+    if (isPresentMode) {
+      if (!scheduleContext?.allowed) {
+        setMessage(scheduleContext?.message || "Absensi belum dapat dilakukan pada waktu ini.");
+        return;
+      }
 
-    if (!hasLocation) {
-      setMessage("Lokasi belum tersedia. Klik Ambil Lokasi terlebih dahulu.");
-      return;
-    }
+      if (!photoBlob) {
+        setMessage("Ambil foto dulu sebelum kirim absensi.");
+        return;
+      }
 
-    if (!canSubmitAttendance) {
-      setMessage(scheduleContext?.message || "Absensi belum dapat dilakukan pada waktu ini.");
+      if (!hasLocation) {
+        setMessage("Lokasi belum tersedia. Klik Ambil Lokasi terlebih dahulu.");
+        return;
+      }
+    } else if (!attendanceNote.trim()) {
+      setMessage("Keterangan wajib diisi untuk cuti atau sakit.");
       return;
     }
 
@@ -206,11 +216,16 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
       setMessage("");
 
       const formData = new FormData();
-      formData.set("photo", new File([photoBlob], `attendance-${Date.now()}.jpg`, { type: "image/jpeg" }));
-      formData.set("latitude", String(location.latitude));
-      formData.set("longitude", String(location.longitude));
-      formData.set("accuracy", String(location.accuracy || ""));
-      formData.set("locationLabel", `${location.latitude}, ${location.longitude}`);
+      formData.set("attendanceStatus", attendanceStatus);
+      formData.set("note", attendanceNote.trim());
+
+      if (isPresentMode) {
+        formData.set("photo", new File([photoBlob], `attendance-${Date.now()}.jpg`, { type: "image/jpeg" }));
+        formData.set("latitude", String(location.latitude));
+        formData.set("longitude", String(location.longitude));
+        formData.set("accuracy", String(location.accuracy || ""));
+        formData.set("locationLabel", `${location.latitude}, ${location.longitude}`);
+      }
 
       const response = await fetch("/api/dashboard/attendance", {
         method: "POST",
@@ -225,18 +240,29 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
 
       setMessage("Absensi berhasil disimpan.");
       clearPhotoPreview();
+      setAttendanceNote("");
       router.refresh();
     });
   }
 
   useEffect(() => {
-    startCamera();
+    if (isPresentMode) {
+      startCamera();
+    } else {
+      stopCamera();
+      clearPhotoPreview();
+      setLocation({
+        latitude: null,
+        longitude: null,
+        accuracy: null,
+      });
+    }
 
     return () => {
       stopCamera();
       clearPhotoPreview();
     };
-  }, []);
+  }, [isPresentMode]);
 
   useEffect(() => {
     if (!scheduleContext?.windowStartIso) {
@@ -263,20 +289,28 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="space-y-2">
               <p className="text-sm font-semibold text-zinc-700">Kamera</p>
-              <div className="overflow-hidden rounded-md border border-zinc-200 bg-black">
-                <video ref={videoRef} autoPlay playsInline muted className="h-auto w-full" />
-              </div>
+              {isPresentMode ? (
+                <>
+                  <div className="overflow-hidden rounded-md border border-zinc-200 bg-black">
+                    <video ref={videoRef} autoPlay playsInline muted className="h-auto w-full" />
+                  </div>
 
-              <div className="flex flex-wrap gap-2">
-                <Button type="button" variant="outline" onClick={startCamera} disabled={startingCamera}>
-                  <RefreshCw />
-                  {startingCamera ? "Membuka Kamera..." : "Buka Ulang Kamera"}
-                </Button>
-                <Button type="button" onClick={capturePhoto}>
-                  <Camera />
-                  Ambil Foto
-                </Button>
-              </div>
+                  <div className="flex flex-wrap gap-2">
+                    <Button type="button" variant="outline" onClick={startCamera} disabled={startingCamera}>
+                      <RefreshCw />
+                      {startingCamera ? "Membuka Kamera..." : "Buka Ulang Kamera"}
+                    </Button>
+                    <Button type="button" onClick={capturePhoto}>
+                      <Camera />
+                      Ambil Foto
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="rounded-md border border-zinc-200 bg-zinc-50 p-4 text-sm text-zinc-700">
+                  <p>Mode izin tidak memerlukan foto dan lokasi. Isi keterangan yang jelas agar tercatat sebagai perizinan resmi.</p>
+                </div>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -300,10 +334,40 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                   <LocateFixed />
                   Ambil Lokasi
                 </Button>
-                <Button type="button" onClick={submitAttendance} disabled={pending || !canSubmitAttendance}>
+                <Button type="button" onClick={submitAttendance} disabled={pending || !canSubmitAttendance || (!isPresentMode && !attendanceNote.trim())}>
                   <Send />
-                  {pending ? "Menyimpan..." : "Kirim Absensi"}
+                  {pending ? "Menyimpan..." : isPresentMode ? "Kirim Absensi" : "Kirim Izin"}
                 </Button>
+              </div>
+
+              <div className="space-y-2 rounded-md border border-zinc-200 bg-white p-3">
+                <p className="text-sm font-semibold text-zinc-700">Jenis Pengisian</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {ATTENDANCE_STATUS_OPTIONS.map((option) => (
+                    <button
+                      key={option.value}
+                      type="button"
+                      onClick={() => setAttendanceStatus(option.value)}
+                      className={`rounded-md border px-3 py-2 text-sm font-medium transition ${attendanceStatus === option.value ? "border-zinc-900 bg-zinc-900 text-white" : "border-zinc-200 bg-white text-zinc-700 hover:bg-zinc-50"}`}
+                    >
+                      {option.label}
+                    </button>
+                  ))}
+                </div>
+
+                {isPresentMode ? null : (
+                  <div className="space-y-1">
+                    <label className="text-sm font-medium text-zinc-700" htmlFor="attendance-note">
+                      Keterangan
+                    </label>
+                    <Input
+                      id="attendance-note"
+                      value={attendanceNote}
+                      onChange={(event) => setAttendanceNote(event.target.value)}
+                      placeholder="Contoh: sakit demam / cuti keperluan keluarga"
+                    />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -318,7 +382,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                   <p>Tim: {scheduleContext.team?.name || "-"}</p>
                   <p>Shift: {scheduleContext.assignment?.shiftCode || "-"}</p>
                   <p>Window: {scheduleContext.message || "-"}</p>
-                  {scheduleContext.alreadyAttended ? <p>Absensi untuk jadwal ini sudah dilakukan.</p> : null}
+                  {scheduleContext.alreadyAttended ? <p>Absensi untuk jadwal ini sudah dilakukan {scheduleContext.attendanceLabel ? `(${scheduleContext.attendanceLabel})` : ""}.</p> : null}
                   {!scheduleContext.allowed ? <p>{countdownLabel}</p> : null}
                 </div>
               )}
@@ -340,6 +404,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
               <thead>
                 <tr className="border-b border-zinc-200 text-zinc-500">
                   <th className="px-2 py-3">Waktu</th>
+                  <th className="px-2 py-3">Status</th>
                   <th className="px-2 py-3">Lokasi</th>
                   <th className="px-2 py-3">Akurasi</th>
                   <th className="px-2 py-3">Foto</th>
@@ -350,6 +415,11 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                 {history.map((item) => (
                   <tr key={item.id} className="border-b border-zinc-100">
                     <td className="px-2 py-3">{item.attendedAt}</td>
+                    <td className="px-2 py-3">
+                      <span className="inline-flex rounded-full border border-zinc-200 bg-zinc-50 px-2 py-1 text-xs font-medium text-zinc-700">
+                        {item.statusLabel || "Hadir"}
+                      </span>
+                    </td>
                     <td className="px-2 py-3">
                       {getGoogleMapsUrl(item.latitude, item.longitude) ? (
                         <a
@@ -384,7 +454,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                 ))}
                 {history.length === 0 ? (
                   <tr>
-                    <td colSpan={5} className="px-2 py-4 text-zinc-500">
+                    <td colSpan={6} className="px-2 py-4 text-zinc-500">
                       Belum ada data absensi.
                     </td>
                   </tr>

@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { getCurrentSession } from "@/lib/auth";
 import { cleanupExpiredAttendancePhotos, saveAttendancePhoto } from "@/lib/attendance-storage";
 import { getTodaysScheduledAttendanceForUser } from "@/lib/attendance-schedule";
+import { ATTENDANCE_STATUS, normalizeAttendanceStatus } from "@/lib/attendance-status";
 import { prisma } from "@/lib/prisma";
 
 function parseNumber(value) {
@@ -12,6 +13,10 @@ function parseNumber(value) {
   }
 
   return parsed;
+}
+
+function parseAttendanceStatus(value) {
+  return normalizeAttendanceStatus(value);
 }
 
 export async function POST(request) {
@@ -31,18 +36,16 @@ export async function POST(request) {
   const longitude = parseNumber(formData.get("longitude"));
   const accuracy = parseNumber(formData.get("accuracy"));
   const locationLabel = String(formData.get("locationLabel") || "").trim();
+  const note = String(formData.get("note") || "").trim();
+  const attendanceStatus = parseAttendanceStatus(formData.get("attendanceStatus"));
   const photo = formData.get("photo");
-
-  if (latitude === null || longitude === null) {
-    return new NextResponse("Lokasi absensi tidak valid.", { status: 400 });
-  }
 
   const scheduledAttendance = await getTodaysScheduledAttendanceForUser(session.user.id);
   if (scheduledAttendance.error) {
     return new NextResponse(scheduledAttendance.error, { status: 400 });
   }
 
-  if (!scheduledAttendance.allowed) {
+  if (attendanceStatus === ATTENDANCE_STATUS.PRESENT && !scheduledAttendance.allowed) {
     return new NextResponse(scheduledAttendance.message || "Absensi belum dapat dilakukan pada waktu ini.", {
       status: 400,
     });
@@ -50,6 +53,45 @@ export async function POST(request) {
 
   if (scheduledAttendance.alreadyAttended) {
     return new NextResponse("Absensi untuk jadwal ini sudah pernah dilakukan.", { status: 400 });
+  }
+
+  if (attendanceStatus !== ATTENDANCE_STATUS.PRESENT) {
+    if (!note) {
+      return new NextResponse("Keterangan wajib diisi untuk cuti atau sakit.", { status: 400 });
+    }
+
+    const attendance = await prisma.attendanceRecord.create({
+      data: {
+        userId: session.user.id,
+        scheduleAssignmentId: scheduledAttendance.assignment.id,
+        status: attendanceStatus,
+        note,
+        attendedAt: new Date(),
+        latitude: null,
+        longitude: null,
+        accuracy: null,
+        locationLabel: null,
+        photoPath: null,
+        photoMimeType: null,
+        photoExpiresAt: null,
+      },
+      select: {
+        id: true,
+        attendedAt: true,
+        status: true,
+      },
+    });
+
+    await cleanupExpiredAttendancePhotos();
+
+    return NextResponse.json({
+      success: true,
+      attendance,
+    });
+  }
+
+  if (latitude === null || longitude === null) {
+    return new NextResponse("Lokasi absensi tidak valid.", { status: 400 });
   }
 
   let photoPayload = {
@@ -72,16 +114,19 @@ export async function POST(request) {
     data: {
       userId: session.user.id,
       scheduleAssignmentId: scheduledAttendance.assignment.id,
+      status: ATTENDANCE_STATUS.PRESENT,
       latitude,
       longitude,
       accuracy: accuracy === null ? null : accuracy,
       locationLabel: locationLabel || null,
+      note: null,
       attendedAt: new Date(),
       ...photoPayload,
     },
     select: {
       id: true,
       attendedAt: true,
+      status: true,
     },
   });
 

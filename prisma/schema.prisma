@@ -157,11 +157,13 @@ model AttendanceRecord {
   scheduleAssignmentId  String?               @unique
   user                 User                  @relation(fields: [userId], references: [id], onDelete: Cascade)
   scheduleAssignment    TeamScheduleAssignment? @relation(fields: [scheduleAssignmentId], references: [id], onDelete: Cascade)
+  status               AttendanceStatus      @default(PRESENT)
   attendedAt           DateTime              @default(now())
-  latitude             Float
-  longitude            Float
+  latitude             Float?
+  longitude            Float?
   accuracy             Float?
   locationLabel        String?
+  note                 String?
   photoPath            String?
   photoMimeType        String?
   photoExpiresAt       DateTime?
@@ -170,6 +172,12 @@ model AttendanceRecord {
   @@index([userId])
   @@index([attendedAt])
   @@index([photoExpiresAt])
+}
+
+enum AttendanceStatus {
+  PRESENT
+  SICK
+  LEAVE
 }
 
 model AccessControlConfig {
