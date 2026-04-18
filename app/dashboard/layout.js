@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, CircleChevronDown, Package } from "lucide-react";
+import { ChartColumnIncreasing, LayoutDashboard, Settings, ShieldCheck, Users, Network, Check, ChevronDown, Package } from "lucide-react";
 
 import MobileSidebar from "@/app/dashboard/mobile-sidebar";
 import { Badge } from "@/components/ui/badge";
@@ -52,20 +52,20 @@ export default async function DashboardLayout({ children }) {
 
             if (item.type === "group") {
               return (
-                <details key={item.id} className="rounded-md bg-white">
-                  <summary className="flex cursor-pointer list-none items-center justify-between px-3 py-2 text-zinc-700 hover:bg-zinc-100 rounded-md">
+                <details key={item.id} className="group rounded-md bg-white">
+                  <summary className="flex cursor-pointer list-none items-center justify-between rounded-md px-3 py-2 text-zinc-700 transition hover:bg-zinc-100">
                     <span className="flex items-center gap-2">
                       <ItemIcon className="h-4 w-4" />
                       {item.label}
                     </span>
-                    <CircleChevronDown className="h-4 w-4 text-zinc-500" />
+                    <ChevronDown className="h-4 w-4 text-zinc-500 transition-transform duration-200 group-open:rotate-180" />
                   </summary>
                   <div className="border-t border-zinc-200 p-2">
                     {item.links.map((subItem) => (
                       <Link
                         key={subItem.href}
                         href={subItem.href}
-                        className="mt-1 block rounded-md px-2 py-1.5 text-zinc-600 transition hover:bg-zinc-100"
+                        className="mt-1 block rounded-md px-2 py-1.5 text-zinc-600 transition hover:bg-zinc-100 hover:text-zinc-900"
                       >
                         {subItem.label}
                       </Link>

@@ -92,7 +92,7 @@ export default function MobileSidebar({ displayName, navItems = [] }) {
 
                 if (item.type === "group") {
                   return (
-                    <div key={item.id} className="rounded-md border border-zinc-200">
+                    <div key={item.id} className="rounded-md">
                       <button
                         type="button"
                         className="flex w-full items-center justify-between px-3 py-2 text-zinc-700"
