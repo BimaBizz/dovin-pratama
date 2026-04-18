@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="540" height="960" viewBox="0 0 540 960" role="img" aria-label="Dovin Pratama dashboard mobile screenshot placeholder">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#1f2937" />
+    </linearGradient>
+  </defs>
+  <rect width="540" height="960" fill="url(#bg)" />
+  <rect x="40" y="24" width="460" height="912" rx="36" fill="#ffffff" />
+  <rect x="70" y="72" width="400" height="52" rx="10" fill="#e4e4e7" />
+  <rect x="70" y="144" width="400" height="170" rx="10" fill="#d4d4d8" />
+  <rect x="70" y="334" width="400" height="170" rx="10" fill="#d4d4d8" />
+  <rect x="70" y="524" width="400" height="170" rx="10" fill="#d4d4d8" />
+  <rect x="70" y="714" width="400" height="170" rx="10" fill="#d4d4d8" />
+  <text x="74" y="56" fill="#ffffff" font-family="Arial, sans-serif" font-size="22" font-weight="700">Dovin Pratama Mobile</text>
+</svg>

@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" role="img" aria-label="Dovin Pratama icon">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#111827" />
+      <stop offset="100%" stop-color="#27272a" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="112" fill="url(#g)" />
+  <path d="M144 132H220C267.496 132 306 170.504 306 218C306 265.496 267.496 304 220 304H144V132Z" fill="#fafafa" />
+  <path d="M330 132H370V380H330V132Z" fill="#fafafa" />
+  <path d="M144 380V304H220C231.6 304 242.8 302 253.2 298L294 380H257L229.6 330H220H144Z" fill="#a1a1aa" />
+</svg>

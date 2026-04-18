@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { LockKeyhole, ShieldCheck } from "lucide-react";
 
+import InstallAppNotice from "@/app/login/install-app-notice";
 import LoginForm from "@/app/login/login-form";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -19,7 +20,9 @@ export default async function LoginPage() {
   }
 
   return (
-    <main className="grid min-h-screen bg-zinc-100 lg:grid-cols-2">
+    <main className="relative grid min-h-screen bg-zinc-100 lg:grid-cols-2">
+      <InstallAppNotice />
+
       <section className="relative hidden overflow-hidden bg-zinc-900 p-10 text-zinc-100 lg:flex lg:flex-col lg:justify-between">
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.12),transparent_45%)]" />
         <div className="relative z-10">

@@ -1,5 +1,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import PwaRegister from "@/components/pwa-register";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,6 +29,7 @@ export default function RootLayout({ children }) {
         className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
       >
         <body className="min-h-full flex flex-col">
+          <PwaRegister />
           <span className="fixed -right-32 top-10 z-50 bg-red-500 h-fit w-96 p-4 items-center text-sm text-white font-bold flex justify-center rotate-45">
             DEVELOPMENT MODE
           </span>
@@ -43,6 +45,7 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <PwaRegister />
         {children}
       </body>
     </html>
