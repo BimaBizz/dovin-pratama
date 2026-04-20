@@ -448,7 +448,7 @@ export default async function AttendanceRecapPage({ searchParams }) {
                         <th className="px-2 py-3">Waktu Absen</th>
                         <th className="px-2 py-3">Lokasi Absen</th>
                         <th className="px-2 py-3">Foto</th>
-                        <th className="px-2 py-3 text-right">Aksi</th>
+                        {canEditRecap ? <th className="px-2 py-3 text-right">Aksi</th> : null}
                       </tr>
                     </thead>
                     <tbody>
@@ -487,14 +487,16 @@ export default async function AttendanceRecapPage({ searchParams }) {
                               <span>-</span>
                             )}
                           </td>
-                          <td className="px-2 py-3">
-                            <div className="flex justify-end">
-                              <AttendanceEditButton
-                                attendanceRecord={row.attendanceRecord}
-                                canEdit={canEditRecap}
-                              />
-                            </div>
-                          </td>
+                          {canEditRecap ? (
+                            <td className="px-2 py-3">
+                              <div className="flex justify-end">
+                                <AttendanceEditButton
+                                  attendanceRecord={row.attendanceRecord}
+                                  canEdit={canEditRecap}
+                                />
+                              </div>
+                            </td>
+                          ) : null}
                         </tr>
                       ))}
                     </tbody>
