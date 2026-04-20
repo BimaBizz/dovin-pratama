@@ -9,6 +9,7 @@ import { prisma } from "@/lib/prisma";
 import { getRolePriority, getRolePriorityMap } from "@/lib/role-priority";
 import Link from "next/link";
 
+import AttendanceEditButton from "@/app/dashboard/absensi/rekap/attendance-edit-button";
 import GuardLocationSelect from "@/app/dashboard/absensi/rekap/guard-location-select";
 
 export const metadata = {
@@ -163,7 +164,7 @@ function getStatusBadge(attendanceRecord) {
 }
 
 export default async function AttendanceRecapPage({ searchParams }) {
-  await requirePagePermission("attendance-recap", "view");
+  const { evaluator } = await requirePagePermission("attendance-recap", "view");
 
   const resolvedSearchParams = await searchParams;
   const [attendanceSetting, rolePriorityMap] = await Promise.all([
@@ -197,8 +198,9 @@ export default async function AttendanceRecapPage({ searchParams }) {
     accumulator[normalizeLocationKey(item.locationName)] = item.priority;
     return accumulator;
   }, {});
-
   const locationNames = locationOptions.map((item) => item.locationName);
+
+  const canEditRecap = evaluator.canCrud("attendance-recap", "update");
 
   const activeTeamId = selectedTeamId || teams[0]?.id || "";
   const exportQuery = new URLSearchParams({
@@ -279,6 +281,7 @@ export default async function AttendanceRecapPage({ searchParams }) {
               longitude: true,
               accuracy: true,
               locationLabel: true,
+              photoPath: true,
             },
           },
         },
@@ -444,6 +447,8 @@ export default async function AttendanceRecapPage({ searchParams }) {
                         <th className="px-2 py-3">Lokasi Jaga</th>
                         <th className="px-2 py-3">Waktu Absen</th>
                         <th className="px-2 py-3">Lokasi Absen</th>
+                        <th className="px-2 py-3">Foto</th>
+                        <th className="px-2 py-3 text-right">Aksi</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -472,6 +477,23 @@ export default async function AttendanceRecapPage({ searchParams }) {
                             ) : (
                               <span>-</span>
                             )}
+                          </td>
+                          <td className="px-2 py-3 text-zinc-700">
+                            {row.attendanceRecord?.photoPath ? (
+                              <Link href={`/api/dashboard/attendance/${row.attendanceRecord.id}/photo`} target="_blank" rel="noopener noreferrer" className="bg-(--primary) text-(--primary-foreground) shadow-sm hover:opacity-90 h-10 px-4 py-2 rounded-md">
+                                LIHAT FOTO
+                              </Link>
+                            ) : (
+                              <span>-</span>
+                            )}
+                          </td>
+                          <td className="px-2 py-3">
+                            <div className="flex justify-end">
+                              <AttendanceEditButton
+                                attendanceRecord={row.attendanceRecord}
+                                canEdit={canEditRecap}
+                              />
+                            </div>
                           </td>
                         </tr>
                       ))}
