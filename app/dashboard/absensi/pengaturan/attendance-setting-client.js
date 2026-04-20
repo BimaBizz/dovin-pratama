@@ -261,7 +261,7 @@ export default function AttendanceSettingClient({
           <Card>
             <CardHeader>
               <CardTitle>Window Shift</CardTitle>
-              <CardDescription>Format jam menggunakan HH:MM. before/after dalam menit.</CardDescription>
+              <CardDescription>Format jam menggunakan HH:MM. before/after dihitung dari Start Time (jam buka absensi). Contoh: Start 08:00, before 60, after 30 berarti window 07:00 - 08:30.</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
