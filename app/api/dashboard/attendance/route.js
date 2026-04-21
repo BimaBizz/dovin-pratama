@@ -19,6 +19,22 @@ function parseAttendanceStatus(value) {
   return normalizeAttendanceStatus(value);
 }
 
+/**
+ * Fire-and-forget: jalankan cleanup foto expired tanpa menunggu hasilnya.
+ * Ini menghindari blocking request absensi hanya untuk menghapus file lama.
+ * Hanya dijalankan dengan probabilitas 10% untuk mengurangi beban per-request.
+ */
+function schedulePhotoCleanup() {
+  // Hanya jalankan cleanup 10% dari waktu untuk mengurangi beban
+  if (Math.random() > 0.1) {
+    return;
+  }
+
+  cleanupExpiredAttendancePhotos().catch((error) => {
+    console.error("[attendance-cleanup] Error:", error?.message || error);
+  });
+}
+
 export async function POST(request) {
   const session = await getCurrentSession();
   if (!session) {
@@ -82,7 +98,8 @@ export async function POST(request) {
       },
     });
 
-    await cleanupExpiredAttendancePhotos();
+    // Non-blocking cleanup — tidak menunggu hasilnya
+    schedulePhotoCleanup();
 
     return NextResponse.json({
       success: true,
@@ -130,7 +147,8 @@ export async function POST(request) {
     },
   });
 
-  await cleanupExpiredAttendancePhotos();
+  // Non-blocking cleanup — tidak menunggu hasilnya
+  schedulePhotoCleanup();
 
   return NextResponse.json({
     success: true,

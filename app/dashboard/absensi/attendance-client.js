@@ -1,6 +1,6 @@
 "use client";
 
-import { Camera, LocateFixed, RefreshCw, Send } from "lucide-react";
+import { Camera, LocateFixed, RefreshCw, Send, SwitchCamera } from "lucide-react";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 
@@ -33,6 +33,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
 
   const [message, setMessage] = useState(initError);
   const [startingCamera, setStartingCamera] = useState(false);
+  const [facingMode, setFacingMode] = useState("user");
   const [photoBlob, setPhotoBlob] = useState(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState("");
   const [attendanceStatus, setAttendanceStatus] = useState(ATTENDANCE_STATUS.PRESENT);
@@ -72,19 +73,23 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     return `Countdown buka absensi: ${hours}:${minutes}:${seconds}`;
   }, [nowTick, scheduleContext]);
 
-  async function startCamera() {
+  async function startCamera(mode) {
     if (typeof navigator === "undefined" || !navigator.mediaDevices?.getUserMedia) {
       setMessage("Browser tidak mendukung kamera.");
       return;
     }
 
+    // Stop existing stream before starting a new one
+    stopCamera();
     setStartingCamera(true);
     setMessage("");
+
+    const selectedMode = mode || facingMode;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: "user",
+          facingMode: selectedMode,
           width: { ideal: 1280 },
           height: { ideal: 720 },
         },
@@ -100,6 +105,12 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     } finally {
       setStartingCamera(false);
     }
+  }
+
+  function switchCamera() {
+    const newMode = facingMode === "user" ? "environment" : "user";
+    setFacingMode(newMode);
+    startCamera(newMode);
   }
 
   function stopCamera() {
@@ -128,13 +139,19 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     }
 
     const video = videoRef.current;
-    const width = video.videoWidth;
-    const height = video.videoHeight;
+    const origWidth = video.videoWidth;
+    const origHeight = video.videoHeight;
 
-    if (!width || !height) {
+    if (!origWidth || !origHeight) {
       setMessage("Kamera belum siap untuk mengambil foto.");
       return;
     }
+
+    // Compress: resize to max 640px width to reduce upload size significantly
+    const MAX_WIDTH = 640;
+    const scale = origWidth > MAX_WIDTH ? MAX_WIDTH / origWidth : 1;
+    const width = Math.round(origWidth * scale);
+    const height = Math.round(origHeight * scale);
 
     const canvas = document.createElement("canvas");
     canvas.width = width;
@@ -148,6 +165,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
 
     context.drawImage(video, 0, 0, width, height);
 
+    // Use quality 0.7 instead of 0.9 to further reduce file size (~70% smaller)
     canvas.toBlob(
       (blob) => {
         if (!blob) {
@@ -161,7 +179,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
         setPhotoPreviewUrl(url);
       },
       "image/jpeg",
-      0.9
+      0.7
     );
   }
 
@@ -213,7 +231,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
     }
 
     startTransition(async () => {
-      setMessage("");
+      setMessage("Mengirim absensi...");
 
       const formData = new FormData();
       formData.set("attendanceStatus", attendanceStatus);
@@ -227,21 +245,37 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
         formData.set("locationLabel", `${location.latitude}, ${location.longitude}`);
       }
 
-      const response = await fetch("/api/dashboard/attendance", {
-        method: "POST",
-        body: formData,
-      });
+      // Add 30-second timeout to prevent hanging requests in production
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 30000);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        setMessage(errorText || "Gagal menyimpan absensi.");
-        return;
+      try {
+        const response = await fetch("/api/dashboard/attendance", {
+          method: "POST",
+          body: formData,
+          signal: controller.signal,
+        });
+
+        clearTimeout(timeoutId);
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          setMessage(errorText || "Gagal menyimpan absensi.");
+          return;
+        }
+
+        setMessage("Absensi berhasil disimpan.");
+        clearPhotoPreview();
+        setAttendanceNote("");
+        router.refresh();
+      } catch (error) {
+        clearTimeout(timeoutId);
+        if (error?.name === "AbortError") {
+          setMessage("Request timeout. Koneksi terlalu lambat, silakan coba lagi.");
+        } else {
+          setMessage(error?.message || "Gagal mengirim absensi. Periksa koneksi internet.");
+        }
       }
-
-      setMessage("Absensi berhasil disimpan.");
-      clearPhotoPreview();
-      setAttendanceNote("");
-      router.refresh();
     });
   }
 
@@ -282,7 +316,7 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
         <CardHeader>
           <CardTitle>Absensi Anggota</CardTitle>
           <CardDescription>
-            {userName}, silakan buka kamera, ambil foto, lalu kirim absensi dengan lokasi saat ini. Foto disimpan di folder tmp dan otomatis dihapus setelah 3 hari.
+            {userName}, silakan buka kamera, ambil foto, lalu kirim absensi dengan lokasi saat ini.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -296,9 +330,13 @@ export default function AttendanceClient({ history = [], userName = "Pengguna", 
                   </div>
 
                   <div className="flex flex-wrap gap-2">
-                    <Button type="button" variant="outline" onClick={startCamera} disabled={startingCamera}>
+                    <Button type="button" variant="outline" onClick={() => startCamera()} disabled={startingCamera}>
                       <RefreshCw />
                       {startingCamera ? "Membuka Kamera..." : "Buka Ulang Kamera"}
+                    </Button>
+                    <Button type="button" variant="outline" onClick={switchCamera} disabled={startingCamera}>
+                      <SwitchCamera />
+                      {facingMode === "user" ? "Kamera Belakang" : "Kamera Depan"}
                     </Button>
                     <Button type="button" onClick={capturePhoto}>
                       <Camera />
